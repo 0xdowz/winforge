@@ -15,6 +15,18 @@
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://python.org)
 [![Version](https://img.shields.io/badge/version-1.0.0-orange.svg)](CHANGELOG.md)
 
+---
+
+## Terminal Preview
+
+WinForge provides a terminal-first interface designed for transparent Windows system inspection, diagnostics, and safe optimization workflows. The interface clearly communicates active execution mode and simulation status before any system interaction occurs.
+
+![WinForge CLI v1.0.0 Main Navigation Menu](docs/images/winforge-terminal-demo.png)
+
+*WinForge CLI v1.0.0 running in Simulation / Dry-Run Client Mode. The terminal interface provides access to diagnostics, benchmarks, optimization workflows, reports, rollback tools, and technician controls.*
+
+---
+
 **WinForge** is a policy-driven, non-destructive Windows system diagnostic and optimization toolkit created and maintained by **@0xdowz**. Built for IT service technicians, system administrators, and performance enthusiasts, WinForge provides a safe, transparent, and fully reversible CLI environment for Windows health inspection and system tuning.
 
 ---
@@ -65,22 +77,7 @@ WinForge addresses this by treating system optimization as a **transactional, st
 
 ---
 
-## Terminal Dashboard & Screenshots
-
-See [docs/images/README.md](docs/images/README.md) for full image capture details and high-resolution previews.
-
-```
-┌──────────────────── WINFORGE :: SYSTEM HEALTH DASHBOARD ────────────────────┐
-│   WINFORGE HEALTH SCORE: 80.8/100 [NEEDS TUNING]                            │
-│   HEALTH INDEX: [================....] 80.8%                                │
-│                                                                             │
-│   CATEGORY BREAKDOWN:                                                       │
-│   * Performance Score:           100.0/100                                  │
-│   * Security & Privacy Score:    100.0/100                                  │
-│   * Maintenance & Cleanliness:  65.0/100                                    │
-│   * Startup & Service Hygiene:   58.0/100                                   │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+> Additional screenshots of the health dashboard (`--scan`), dry-run simulation, benchmark suite, and technician inspection cards (`--tech`) are documented in [`docs/images/README.md`](docs/images/README.md).
 
 ---
 
