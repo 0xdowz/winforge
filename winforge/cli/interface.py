@@ -1,11 +1,14 @@
 import sys
 import logging
 from typing import Optional, List
-from rich.console import Console
 from rich.prompt import Prompt, Confirm
 
 from winforge.cli.banner import render_banner
-from winforge.cli.components import render_health_dashboard, render_hardware_summary, render_warnings, render_tweak_inspection_card
+from winforge.cli.components import (
+    render_health_dashboard, render_hardware_summary, render_warnings,
+    render_tweak_inspection_card, render_benchmark_results, render_dry_run_summary,
+    console
+)
 from winforge.core.engine import run_full_system_scan, run_session_pipeline, export_system_report
 from winforge.core.tweak_loader import load_tier1_tweaks
 from winforge.optimizations.executor import OptimizationExecutor
@@ -13,7 +16,6 @@ from winforge.benchmark.runner import run_benchmark_suite
 from winforge.models.system import SystemHealthReport
 from winforge.models.tweak import Tweak
 
-console = Console()
 logger = logging.getLogger("winforge")
 
 
@@ -92,30 +94,24 @@ class WinForgeCLI:
 
     def handle_benchmark(self):
         """Run quantitative benchmark suite."""
-        console.print("\n[bold cyan]Running quantitative performance benchmarks...[/bold cyan]")
+        from rich.rule import Rule
+        console.print()
+        console.print("[bold cyan]Running quantitative performance benchmarks...[/bold cyan]")
         bench = run_benchmark_suite()
-        console.print(f"\n[bold green]Benchmark Results:[/bold green]")
-        console.print(f" • CPU Execution Latency: [bold yellow]{bench.cpu_latency_ms} ms[/bold yellow]")
-        console.print(f" • Memory Copy Throughput: [bold yellow]{bench.memory_throughput_mbs} MB/s[/bold yellow]")
-        console.print(f" • Disk Write Speed: [bold yellow]{bench.disk_io_write_mbs} MB/s[/bold yellow]")
-        console.print(f" • Timer Precision: [bold yellow]{bench.timer_resolution_ms} ms[/bold yellow]")
-        console.print(f" • DNS Resolution Latency: [bold yellow]{bench.dns_latency_ms} ms[/bold yellow]")
-
-        Prompt.ask("\nPress Enter to return to main menu")
+        render_benchmark_results(bench)
+        Prompt.ask("Press Enter to return to main menu")
 
     def handle_dry_run(self):
         """Run Dry-Run simulation pipeline."""
-        console.print("\n[bold cyan]Initiating Dry-Run simulation pipeline...[/bold cyan]")
+        console.print()
+        console.print("[bold cyan]Initiating Dry-Run simulation pipeline...[/bold cyan]")
         session_mgr, report, _, sim_res = run_session_pipeline(dry_run=True, run_benchmarks=False)
         self.latest_report = report
 
-        console.print(f"\n[bold yellow]DRY-RUN SIMULATION COMPLETED[/bold yellow]")
-        if sim_res:
-            console.print(f" • Baseline Score: {sim_res['baseline_health_score']}")
-            console.print(f" • Simulated Post-Opt Score: [bold green]{sim_res['simulated_health_score']}[/bold green] (+{sim_res['score_delta']})")
+        render_health_dashboard(self.latest_report)
+        render_dry_run_summary(session_mgr, report, sim_res)
 
-        console.print(f"\n[bold green]Session folder saved at:[/bold green] {session_mgr.session_dir}")
-        Prompt.ask("\nPress Enter to return to main menu")
+        Prompt.ask("Press Enter to return to main menu")
 
     def handle_apply_optimizations(self):
         """Execute optimization pipeline in Client or Technician mode."""

@@ -16,7 +16,10 @@ from winforge.core.logger import setup_logger
 from winforge.core.privileges import require_admin, is_admin
 from winforge.core.engine import run_full_system_scan, run_session_pipeline, export_system_report
 from winforge.core.checksums import verify_tweak_checksums
-from winforge.cli.components import render_health_dashboard, render_hardware_summary, render_warnings
+from winforge.cli.components import (
+    render_health_dashboard, render_hardware_summary, render_warnings,
+    render_benchmark_results, render_dry_run_summary, console
+)
 from winforge.cli.interface import WinForgeCLI
 from winforge.licensing.policy import LicensePolicyManager
 
@@ -37,6 +40,7 @@ def main():
     parser.add_argument("--tech", action="store_true", help="Launch in Technician Mode with advanced controls & inspection cards")
     parser.add_argument("--license-info", action="store_true", help="Display Open Source Environment Information")
     parser.add_argument("--license-check", action="store_true", help="Perform offline verification and environment check")
+    parser.add_argument("--demo", action="store_true", help="Run non-interactive demo/preview mode for screenshots (read-only)")
     parser.add_argument("--version", action="version", version=f"WINFORGE v{__version__} by @{__author__}")
 
     # Subcommand positional alias
@@ -57,6 +61,7 @@ def main():
     is_execute = args.execute or cmd == "optimize"
     is_tech = args.tech or cmd == "tech"
     is_license = args.license_info or args.license_check or cmd == "license"
+    is_demo = args.demo
 
     logger.info(f"Launching WINFORGE v{__version__} by @{__author__} (Cmd: {cmd}, TechMode: {is_tech}, DryRun: {is_dry_run}, Execute: {is_execute})")
 
@@ -97,12 +102,30 @@ def main():
 
     # Mode 2: Dry-Run Simulation
     if is_dry_run:
-        print("\n[DRY-RUN SIMULATION MODE]")
+        console.print("\n[DRY-RUN SIMULATION MODE]")
         session_mgr, report, _, sim_res = run_session_pipeline(dry_run=True, run_benchmarks=False)
         render_health_dashboard(report)
-        print(f"\n✓ Session ID: {session_mgr.session_id}")
-        print(f"✓ Simulation log: {session_mgr.session_dir / 'findings.json'}")
-        print(f"✓ Interactive HTML Report: {session_mgr.get_report_html_path()}")
+        render_dry_run_summary(session_mgr, report, sim_res)
+        sys.exit(0)
+
+    # Mode 2c: Non-interactive benchmark
+    if cmd == "benchmark":
+        from winforge.benchmark.runner import run_benchmark_suite
+        console.print("\n[bold cyan]Running quantitative performance benchmarks...[/bold cyan]")
+        bench = run_benchmark_suite()
+        render_benchmark_results(bench)
+        sys.exit(0)
+
+    # Mode 2b: Demo / Screenshot Preview Mode (read-only, no user prompts)
+    if is_demo:
+        from winforge.benchmark.runner import run_benchmark_suite
+        console.print("\n[bold cyan][DEMO MODE — Read-Only Preview][/bold cyan]\n")
+        report = run_full_system_scan()
+        render_health_dashboard(report)
+        render_hardware_summary(report)
+        render_warnings(report)
+        bench = run_benchmark_suite()
+        render_benchmark_results(bench)
         sys.exit(0)
 
     # Mode 3: Production Execution / Optimize
