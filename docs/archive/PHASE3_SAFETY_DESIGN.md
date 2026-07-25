@@ -1,3 +1,5 @@
+> **HISTORICAL DEVELOPMENT DOCUMENT**: Current official project identity: **WinForge** maintained by **@0xdowz**.
+
 # WinForge: Phase 3 Safety Architecture & Design Document
 
 ## 1. Executive Summary
@@ -55,7 +57,7 @@ graph TD
 ## 3. Safety Subsystem Components (`winforge/safety/`)
 
 ### A. `restore_point.py` (Windows Restore Point Creator)
-- Wraps WMI `SystemRestore` class (`wmi.WMI(namespace="root/default").SystemRestore`) or PowerShell `Checkpoint-Computer -Description "ANAS_OPTIMIZER_PRE_OPT" -RestorePointType "MODIFY_SETTINGS"`.
+- Wraps WMI `SystemRestore` class (`wmi.WMI(namespace="root/default").SystemRestore`) or PowerShell `Checkpoint-Computer -Description "WINFORGE_OPT_PRE_OPT" -RestorePointType "MODIFY_SETTINGS"`.
 - Checks if Windows System Restore is enabled; if disabled, attempts to enable it or returns `RESTORE_POINT_FAILED`.
 
 ### B. `registry_backup.py` (Registry Hive Exporter)

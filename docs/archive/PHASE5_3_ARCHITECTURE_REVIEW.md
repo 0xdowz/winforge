@@ -1,3 +1,5 @@
+> **HISTORICAL DEVELOPMENT DOCUMENT**: Current official project identity: **WinForge** maintained by **@0xdowz**.
+
 # WinForge: Phase 5.3 Architecture Audit & Review
 
 ## 1. Executive Summary & Audit Purpose
@@ -38,7 +40,7 @@ The objective is to identify potential unsafe execution paths, missing pipeline 
 | **Bypassing Backup Subsystem** | `process_tweak_pipeline()` checks `rp_ok` and `reg_ok`. | Add a hard execution assertion: If `mock_execution=False` and `session_mgr.session_dir / "rollback.json"` is missing or invalid, abort execution immediately with `CRITICAL_SAFETY_FAULT`. |
 | **Client Mode Executing Technician-Only Tweaks** | `PolicyEngine` checks device profile rules. | Add explicit Risk Score filter: If `tweak.risk_score > 50` or `tweak.technician_only=True` and CLI is in Client Mode, automatically block the tweak with `RISK_TIER_RESTRICTED`. |
 | **Unverified State Mutations** | `TweakVerifier` checks post-execution state. | If `verifier.verify()` returns `False` during production execution (`mock=False`), automatically invoke `RollbackEngine.rollback_session()` to revert all changes immediately. |
-| **Accidental Production Writes in Tests** | Handlers default to `mock=True`. | Add isolated testing guard: All automated unit tests run with `mock_execution=True` or target isolated non-critical registry key `HKCU\Software\ANASOptimizerTest`. |
+| **Accidental Production Writes in Tests** | Handlers default to `mock=True`. | Add isolated testing guard: All automated unit tests run with `mock_execution=True` or target isolated non-critical registry key `HKCU\Software\WinForgeTest`. |
 
 ---
 
@@ -92,7 +94,7 @@ We are ready to proceed with:
 - **STEP 2**: Production Execution Wiring
 - **STEP 3**: Rich CLI Client & Technician Inspection Cards
 - **STEP 4**: Production Safety Validation Unit Tests (`tests/test_production_safety.py`)
-- **STEP 5**: Isolated Real Registry Test Environment (`HKCU\Software\ANASOptimizerTest`)
+- **STEP 5**: Isolated Real Registry Test Environment (`HKCU\Software\WinForgeTest`)
 - **STEP 6**: PyInstaller Portable Packaging Script (`build.py`)
 
 Awaiting your approval of [PHASE5_3_ARCHITECTURE_REVIEW.md](file:///c:/Users/Admin/Desktop/Twek/PHASE5_3_ARCHITECTURE_REVIEW.md) before modifying code.

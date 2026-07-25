@@ -1,3 +1,5 @@
+> **HISTORICAL DEVELOPMENT DOCUMENT**: Current official project identity: **WinForge** maintained by **@0xdowz**.
+
 # WinForge: Comprehensive Technical & Architectural Blueprint
 
 ---
@@ -21,7 +23,7 @@ WinForge exists to provide a **safe, transparent, verifiable, and completely rev
 WinForge is designed for commercial service operations. Technicians perform paid PC optimization routines for clients, using the tool's automated safety locks, risk score badges, and standalone HTML diagnostic report exports to demonstrate tangible performance improvements.
 
 ### 5. Why CLI Is the Correct Format
-- **Zero Overhead & Portability**: Runs as a single portable binary (`ANASOptimizer.exe`) from any USB drive without requiring installers, desktop window managers, web runtimes, or GUI frameworks.
+- **Zero Overhead & Portability**: Runs as a single portable binary (`WinForge.exe`) from any USB drive without requiring installers, desktop window managers, web runtimes, or GUI frameworks.
 - **Remote & Headless Administration**: Can be invoked via WinRM, PowerShell, SSH, or batch automation scripts across enterprise workstations.
 - **Terminal Efficiency**: IT technicians work faster in terminal environments where system state, diagnostic scorecards, and tweak specifications are rendered concisely using Rich terminal formatting.
 - **Terminal Identity**: Built with the tool philosophy of Unix/Linux CLI software like `git`, `docker`, `kubectl`, `btop`, and `neofetch`.
@@ -33,7 +35,7 @@ WinForge is designed for commercial service operations. Technicians perform paid
 WinForge follows a clean modular architecture:
 
 ```
-ANAS_OPTIMIZER/
+WINFORGE/
 ├── winforge/
 │   ├── analyzers/            # WMI & System Diagnostic Collectors
 │   ├── benchmark/            # Quantitative Latency & Throughput Benchmark Suite
@@ -80,7 +82,7 @@ ANAS_OPTIMIZER/
 Every optimization command follows a strict non-bypassable 11-state lifecycle pipeline:
 
 ```
-[CLI User Command: anasoptimizer --execute | --tech | --dry-run | --scan]
+[CLI User Command: winforge --execute | --tech | --dry-run | --scan]
                                │
                                ▼
 [1. DISCOVERED: Diagnostic Scan & Tweak DB Loaded]

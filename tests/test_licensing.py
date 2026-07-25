@@ -9,8 +9,8 @@ from winforge.licensing.models import ValidationState, LicenseType
 from winforge.licensing.fingerprint import FingerprintProvider, FingerprintMatcher, FingerprintRecord
 from winforge.licensing.verifier import LicenseVerifier
 from winforge.licensing.policy import LicensePolicyManager
-from tools.license_creator import sign_license_payload
-from tools.key_generator import generate_rsa_keypair
+from tools.internal.license_creator import sign_license_payload
+from tools.internal.key_generator import generate_rsa_keypair
 
 
 def setup_test_keypair(tmp_path: Path):

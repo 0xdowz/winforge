@@ -1,3 +1,5 @@
+> **HISTORICAL DEVELOPMENT DOCUMENT**: Current official project identity: **WinForge** maintained by **@0xdowz**.
+
 # WinForge: Phase 5 Execution Plan & Production Transition Strategy
 
 ## 1. Executive Summary & Goal
@@ -50,7 +52,7 @@ To provide granular safety controls between Client Mode and Technician Mode, eve
    - `cleanup.py`: Windows Temp, User Temp, WER dump file purge.
    - `network.py`: Network throttling index tuning (Technician Only).
 4. `build.py`
-   - PyInstaller build script for compiling `ANASOptimizer.exe`.
+   - PyInstaller build script for compiling `WinForge.exe`.
 
 ### Existing Files to Modify
 
@@ -96,11 +98,11 @@ To provide granular safety controls between Client Mode and Technician Mode, eve
 1. **Mock Test Suite Validation**:
    - Run existing PyTest test suite (25 tests) to ensure zero regressions in mock mode.
 2. **Isolated Real Registry Key Tests**:
-   - Execute live registry write/verify/rollback tests against an isolated non-critical key (`HKCU\Software\ANASOptimizerTest`).
+   - Execute live registry write/verify/rollback tests against an isolated non-critical key (`HKCU\Software\WinForgeTest`).
 3. **Rollback Reversion Validation**:
    - Verify that modifying a test value and calling `RollbackEngine.rollback_session()` restores the exact original value 100% of the time.
 4. **Clean Machine Portable EXE Validation**:
-   - Build `ANASOptimizer.exe` and test execution on a clean Windows virtual machine without Python installed.
+   - Build `WinForge.exe` and test execution on a clean Windows virtual machine without Python installed.
 
 ---
 

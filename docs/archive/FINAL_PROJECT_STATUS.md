@@ -1,3 +1,5 @@
+> **HISTORICAL DEVELOPMENT DOCUMENT**: Current official project identity: **WinForge** maintained by **@0xdowz**.
+
 # WinForge: Final Production Status & Rebranding Confirmation Report
 
 ---

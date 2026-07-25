@@ -1,3 +1,5 @@
+> **HISTORICAL DEVELOPMENT DOCUMENT**: Current official project identity: **WinForge** maintained by **@0xdowz**.
+
 # WinForge: Repository Cleanup & Production Audit Report
 
 ---
@@ -28,7 +30,7 @@ A thorough repository audit was performed to clean temporary build artifacts, ve
 - `build.py`: PyInstaller compilation script.
 - `requirements.txt` & `pyproject.toml`: Dependency configurations.
 - `README.md`, `CHANGELOG`, `VERSION`, `LICENSE`: Release documentation and metadata.
-- `dist/ANASOptimizer.exe`: Standalone portable binary.
+- `dist/WinForge.exe`: Standalone portable binary.
 
 ### B. Cleaned / Reset Build Artifacts
 - `build/`: Temporary intermediate PyInstaller build object files (re-generated during build).

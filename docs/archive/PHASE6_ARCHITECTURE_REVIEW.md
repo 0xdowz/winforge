@@ -1,3 +1,5 @@
+> **HISTORICAL DEVELOPMENT DOCUMENT**: Current official project identity: **WinForge** maintained by **@0xdowz**.
+
 # WinForge: Phase 6 Commercial Licensing & Machine Fingerprinting Architecture Review
 
 ## 1. Executive Summary & Core Decoupling Philosophy
@@ -11,7 +13,7 @@ Phase 6 establishes the **Commercial Licensing & Machine Fingerprinting Subsyste
 To enforce strict security boundaries, licensing functionality is separated between client runtime modules and vendor offline tooling:
 
 ```
-ANAS_OPTIMIZER/
+WINFORGE/
 ├── winforge/
 │   └── licensing/               # CLIENT RUNTIME ONLY
 │       ├── __init__.py
@@ -26,7 +28,7 @@ ANAS_OPTIMIZER/
 ```
 
 > [!CAUTION]
-> **Zero Key Leakage Guarantee**: The client executable (`ANASOptimizer.exe`) contains **ONLY** the RSA-2048 Public Verification Key (`public_key.pem`) and signature verification logic (`verifier.py`). Private signing keys (`private_key.pem`) and signing tools reside exclusively in vendor offline tooling (`tools/`).
+> **Zero Key Leakage Guarantee**: The client executable (`WinForge.exe`) contains **ONLY** the RSA-2048 Public Verification Key (`public_key.pem`) and signature verification logic (`verifier.py`). Private signing keys (`private_key.pem`) and signing tools reside exclusively in vendor offline tooling (`tools/`).
 
 ---
 
@@ -85,7 +87,7 @@ The matching engine compares current hardware signals against the license record
 
 ### A. RSA-PSS Signature Scheme
 - **Algorithm**: RSA-2048 with **RSA-PSS** (Probabilistic Signature Scheme) padding and **SHA-256**.
-- **Offline Operation**: Validation operates 100% offline. `ANASOptimizer.exe` uses `public_key.pem` to verify digital signatures in `licenses/license.json`.
+- **Offline Operation**: Validation operates 100% offline. `WinForge.exe` uses `public_key.pem` to verify digital signatures in `licenses/license.json`.
 
 ### B. Validation State Enum (`ValidationState`)
 ```python

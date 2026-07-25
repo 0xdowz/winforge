@@ -1,3 +1,5 @@
+> **HISTORICAL DEVELOPMENT DOCUMENT**: Current official project identity: **WinForge** maintained by **@0xdowz**.
+
 # WinForge: Deployment & Portable Execution Architecture
 
 ## 1. Executive Summary & Product Vision
@@ -14,8 +16,8 @@ WinForge supports two distinct distribution models tailored to commercial deploy
 - **Target User**: IT Technicians, System Administrators, Field Engineers.
 - **Distribution Format**: Portable folder structure carried on technician USB drives or zip packages:
   ```
-  ANASOptimizer_Technician/
-  ├── ANASOptimizer.exe           # Core Portable Executable
+  WinForge_Technician/
+  ├── WinForge.exe           # Core Portable Executable
   ├── config/
   │   ├── tweaks.json             # Modifiable external tweak database
   │   └── windows_compatibility.json # Version matrix
@@ -27,7 +29,7 @@ WinForge supports two distinct distribution models tailored to commercial deploy
 
 ### Mode B: Client Edition (Single Executable Distribution)
 - **Target User**: End Customers, Self-Service Client Diagnostics.
-- **Distribution Format**: Standalone single executable file: `ANASOptimizer_Client.exe`.
+- **Distribution Format**: Standalone single executable file: `WinForge.exe`.
 - **Key Advantage**: Zero extra files or folders. Configs and default tweaks are bundled internally (`sys._MEIPASS`). Automatically extracts session reports into a local `reports/` folder upon execution.
 
 ---
@@ -36,7 +38,7 @@ WinForge supports two distinct distribution models tailored to commercial deploy
 
 1. **Config-Driven Tweak Updates**:
    - `config/tweaks.json` contains versioned tweak definitions (`schema_version: "2.0.0"`).
-   - In Technician Edition, updating `tweaks.json` immediately updates detection rules, risk ratings, and recommended apply/rollback methods without rebuilding `ANASOptimizer.exe`.
+   - In Technician Edition, updating `tweaks.json` immediately updates detection rules, risk ratings, and recommended apply/rollback methods without rebuilding `WinForge.exe`.
 2. **Compatibility Matrix Updates**:
    - `config/windows_compatibility.json` maps Windows build numbers (e.g. Windows 10 22H2 build 19045, Windows 11 23H2 build 22631, Windows Server 2022 build 20348) to supported tweak categories.
 
@@ -56,7 +58,7 @@ sessions/
 ```
 
 ### Session Workflow
-1. Technician launches `ANASOptimizer.exe`.
+1. Technician launches `WinForge.exe`.
 2. System generates a unique `Session ID` (e.g. `SESSION_20260725_191500_A8F2`).
 3. Diagnostic scan results are serialized into `before.json`.
 4. Policy Engine evaluates `before.json` against device context and writes `findings.json`.
@@ -106,13 +108,13 @@ def get_bundle_dir() -> Path:
 
 - **Technician Edition Command**:
   ```bash
-  pyinstaller --noconfirm --onedir --uac-admin --name "ANASOptimizer_Tech" \
+  pyinstaller --noconfirm --onedir --uac-admin --name "WinForge_Tech" \
     --add-data "config/windows_compatibility.json;config" \
     winforge/main.py
   ```
 - **Client Edition Command**:
   ```bash
-  pyinstaller --noconfirm --onefile --uac-admin --name "ANASOptimizer_Client" \
+  pyinstaller --noconfirm --onefile --uac-admin --name "WinForge" \
     --add-data "config/tweaks.json;config" \
     --add-data "config/windows_compatibility.json;config" \
     winforge/main.py

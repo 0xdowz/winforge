@@ -1,3 +1,5 @@
+> **HISTORICAL DEVELOPMENT DOCUMENT**: Current official project identity: **WinForge** maintained by **@0xdowz**.
+
 # WinForge: Phase 4 Execution Framework Architecture
 
 ## 1. Executive Summary & Design Philosophy
