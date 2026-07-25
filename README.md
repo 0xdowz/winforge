@@ -15,7 +15,18 @@
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://python.org)
 [![Version](https://img.shields.io/badge/version-1.0.0-orange.svg)](CHANGELOG.md)
 
-**WinForge** is a policy-driven, non-destructive Windows system diagnostic and optimization toolkit created and maintained by **@0xdowz**. Built for IT service technicians, system administrators, and advanced users, WinForge provides a safe, transparent, and fully reversible CLI environment for Windows health inspection and system tuning.
+**WinForge** is a policy-driven, non-destructive Windows system diagnostic and optimization toolkit created and maintained by **@0xdowz**. Designed for IT service technicians, system administrators, and performance enthusiasts, WinForge provides a safe, transparent, and fully reversible CLI environment for Windows health inspection and system tuning.
+
+---
+
+## Overview
+
+WinForge provides structured system inspection, quantitative performance benchmarks, and policy-driven Windows optimizations. Unlike scripts that perform destructive, unverified system changes, WinForge evaluates settings against safety thresholds and enforces automated rollback if post-execution state verification fails.
+
+### Target Audience
+- **IT Technicians**: Portable USB diagnostic utility (`WinForge.exe`) for auditing client PCs and generating interactive HTML diagnostic reports.
+- **System Administrators**: Non-interactive diagnostic scanning (`--scan`) and automated JSON telemetry reporting.
+- **Power Users & Gamers**: Reversible latency tuning, power scheme configuration, and startup hygiene management.
 
 ---
 
@@ -26,7 +37,7 @@ Traditional Windows debloat scripts and optimization packs often rely on opaque 
 WinForge addresses this by treating system optimization as a **transactional, state-machine-driven engineering process**:
 
 - **Non-Destructive Defaults**: All operations run in simulation mode (`--dry-run`) by default.
-- **4-Layer Safety Lock**: Creates Windows System Restore Points, targeted `.reg` backups, system state JSON snapshots, and atomic transaction ledgers before applying mutations.
+- **4-Layer Safety Lock**: Creates Windows System Restore Points, targeted `.reg` backups, pre-state JSON snapshots, and atomic transaction ledgers before applying system mutations.
 - **Automated LIFO Rollback Engine**: Reverts modifications in reverse chronological order if post-apply verification checks fail.
 - **Protected Immutable Boundaries**: Critical Windows kernel and security services (`RpcSs`, `EventLog`, `WinDefend`, `CryptSvc`, `Dhcp`) can never be disabled by WinForge policies.
 
@@ -41,20 +52,20 @@ WinForge addresses this by treating system optimization as a **transactional, st
 
 ---
 
-## Key Features
+## Core Features
 
-- **System Diagnostic Inspector**: Collects WMI and Win32 hardware metrics (CPU, GPU, RAM, Storage, OS Build, and Active Power Scheme) to compute an internal **WinForge System Health Score (0–100)**.
-- **Quantitative Performance Benchmark Suite**: Measures CPU execution latency (ms), memory throughput (MB/s), disk sequential write speed (MB/s), timer resolution (ms), and DNS latency (ms).
+- **System Diagnostic Inspector**: Collects detailed hardware and OS telemetry using Windows native WMI and Win32 interfaces to generate an internal **WinForge System Health Score (0–100)**.
+- **Quantitative Performance Benchmarks**: Measures CPU execution latency (ms), memory throughput (MB/s), disk sequential write speed (MB/s), timer resolution (ms), and DNS latency (ms).
 - **Policy-Driven Optimizations**: 6 category modules targeting Gaming latency, Power scheme policies, Startup hygiene, Service optimization, Disk cleanup, and Network stack settings.
 - **Risk Score Intelligence**: Categorizes tweaks (`SAFE`, `MODERATE`, `ADVANCED`, `TECHNICIAN ONLY`) with risk weighting (0–100) ensuring high-risk tweaks require explicit technician approval.
 - **Technician Inspection Mode (`--tech`)**: Displays granular Tweak Inspection Cards in terminal for manual Y/N approval.
 - **Configuration Integrity Engine**: Validates SHA-256 integrity hashes for configuration files (`config/checksums.json`) prior to execution.
-- **Rich Terminal User Experience**: Terminal dashboards, spec overview tables, degradation alerts, and health progress bars.
+- **Rich Terminal User Experience**: Terminal dashboards, spec overview tables, degradation alerts, and health progress bars powered by Rich.
 - **Portable Binary Execution**: Available as a standalone portable executable (`WinForge.exe`, ~38.8 MB) with embedded UAC elevation manifest.
 
 ---
 
-## Terminal Dashboard Demo
+## Terminal Dashboard Preview
 
 ![WinForge Dashboard](docs/images/dashboard.png)
 
@@ -95,44 +106,54 @@ python build.py
 ```cmd
 WinForge.exe --scan
 ```
-*Gathers system telemetry, calculates WinForge Health Scores, and exports a diagnostic JSON report without modifying system state.*
+- **Permission**: Standard User (No Admin required).
+- **Mutations**: None (Read-only).
+- **Output**: Diagnostic telemetry table, WinForge Health Score, and `reports/system_report.json`.
 
 ### Optimization Simulation (Dry-Run)
 ```cmd
 WinForge.exe --dry-run
 ```
-*Simulates optimization execution, calculates score gains, and generates an interactive HTML report without applying changes.*
+- **Permission**: Standard User (No Admin required).
+- **Mutations**: None (Simulated).
+- **Output**: Calculated score gain log and interactive session HTML report (`sessions/<ID>/report.html`).
 
 ### Production Execution (Elevated Terminal)
 ```cmd
 WinForge.exe --execute
 ```
-*Requires Administrator privileges. Creates System Restore Points, exports registry backups, applies approved safe tweaks, and verifies system state.*
+- **Permission**: **Administrator Privileges Required** (`uac_admin`).
+- **Mutations**: Applies safe registry & service policies.
+- **Output**: Creates Restore Point, exports `.reg` backups, applies safe tweaks, verifies state, and logs transaction ledgers.
 
 ### Technician Inspection Mode
 ```cmd
 WinForge.exe --tech
 ```
-*Launches an interactive inspection mode displaying individual tweak risk ratings and technical parameters for granular confirmation.*
+- **Permission**: Standard User or Admin.
+- **Mutations**: User-approved per tweak.
+- **Output**: Displays individual Tweak Inspection Cards with risk score badges and Y/N prompts.
 
 ### Environment Information
 ```cmd
 WinForge.exe --license-info
 ```
-*Outputs Open Source Environment details, policy status, and verifier information.*
+- **Permission**: Standard User.
+- **Mutations**: None.
+- **Output**: Open Source Environment details, status message, and capability profile.
 
 ---
 
-## Command Reference Summary
+## CLI Command Matrix
 
-| Flag / Subcommand | Alias | Purpose | Risk Level | Output Artifact |
-| :--- | :--- | :--- | :---: | :--- |
-| `--scan` | `scan` | Run diagnostic health scan | **LOW (0)** | Health dashboard, spec table, `reports/system_report.json` |
-| `--dry-run` | `dry-run` | Run optimization simulation | **LOW (0)** | Simulated score gain, `sessions/<ID>/report.html` |
-| `--execute` | `optimize` | Execute production optimizations | **MEDIUM** | Restore point creation, transaction ledger |
-| `--tech` | `tech` | Launch Technician Inspection mode | **MEDIUM-HIGH** | Tweak Inspection Cards, Y/N prompts |
-| `--license-info` | `license` | View Open Source Environment info | **LOW (0)** | Environment status summary table |
-| `benchmark` | - | Run quantitative micro-benchmarks | **LOW (0)** | CPU, RAM, Disk, DNS benchmark scores |
+| Flag / Subcommand | Alias | Admin Required? | Modifies System? | Primary Output |
+| :--- | :--- | :---: | :---: | :--- |
+| `--scan` | `scan` | No | No | Diagnostic spec summary & JSON telemetry |
+| `--dry-run` | `dry-run` | No | No | Calculated score delta & session HTML report |
+| `--execute` | `optimize` | **Yes** | **Yes** | Restore point creation & verified tweaks |
+| `--tech` | `tech` | Conditional | Prompted | Granular Tweak Inspection Cards (Y/N) |
+| `--license-info` | `license` | No | No | Open Source Environment status table |
+| `benchmark` | - | No | No | CPU, RAM, Disk, DNS benchmark scores |
 
 ---
 
@@ -167,10 +188,23 @@ WinForge.exe --license-info
 
 ---
 
+## Frequently Asked Questions (FAQ)
+
+#### Q: Will WinForge disable Windows Defender or Windows Update?
+**No.** WinForge hard-gates core security services (`WinDefend`, `wuauserv`, `CryptSvc`) as strictly immutable. They cannot be modified or disabled.
+
+#### Q: How do I undo changes made by WinForge?
+WinForge creates a System Restore Point (`WINFORGE_OPT_`), exports a targeted `.reg` file backup, and logs an atomic transaction ledger before applying changes. You can revert changes automatically via the LIFO rollback engine or manually import the exported `.reg` backup file.
+
+#### Q: Does WinForge require internet access?
+**No.** WinForge operates 100% offline. It contains no telemetry daemons, tracking scripts, or cloud dependencies.
+
+---
+
 ## Development & Automated Testing
 
-### Running Tests
-WinForge includes a comprehensive PyTest test suite (43 automated tests):
+### Running Unit Tests
+WinForge includes a PyTest test suite (43 automated tests):
 ```cmd
 python -m pytest tests/
 ```
