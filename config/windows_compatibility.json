@@ -1,0 +1,55 @@
+{
+  "matrix_version": "1.0.0",
+  "windows_builds": {
+    "win10_21h2": {
+      "name": "Windows 10 21H2",
+      "min_build": 19044,
+      "max_build": 19044,
+      "allowed_categories": ["GAMING", "CLEANUP", "STARTUP", "SERVICES", "NETWORK", "POWER", "SECURITY_PRIVACY"]
+    },
+    "win10_22h2": {
+      "name": "Windows 10 22H2",
+      "min_build": 19045,
+      "max_build": 19045,
+      "allowed_categories": ["GAMING", "CLEANUP", "STARTUP", "SERVICES", "NETWORK", "POWER", "SECURITY_PRIVACY"]
+    },
+    "win11_21h2": {
+      "name": "Windows 11 21H2",
+      "min_build": 22000,
+      "max_build": 22000,
+      "allowed_categories": ["GAMING", "CLEANUP", "STARTUP", "SERVICES", "NETWORK", "POWER", "SECURITY_PRIVACY"]
+    },
+    "win11_22h2": {
+      "name": "Windows 11 22H2",
+      "min_build": 22621,
+      "max_build": 22621,
+      "allowed_categories": ["GAMING", "CLEANUP", "STARTUP", "SERVICES", "NETWORK", "POWER", "SECURITY_PRIVACY"]
+    },
+    "win11_23h2": {
+      "name": "Windows 11 23H2",
+      "min_build": 22631,
+      "max_build": 22631,
+      "allowed_categories": ["GAMING", "CLEANUP", "STARTUP", "SERVICES", "NETWORK", "POWER", "SECURITY_PRIVACY"]
+    },
+    "win11_24h2": {
+      "name": "Windows 11 24H2",
+      "min_build": 26100,
+      "max_build": 26200,
+      "allowed_categories": ["GAMING", "CLEANUP", "STARTUP", "SERVICES", "NETWORK", "POWER", "SECURITY_PRIVACY"]
+    },
+    "win_server_2022": {
+      "name": "Windows Server 2022",
+      "min_build": 20348,
+      "max_build": 20348,
+      "allowed_categories": ["CLEANUP", "SERVICES", "NETWORK", "SECURITY_PRIVACY"],
+      "forbidden_categories": ["GAMING", "POWER"]
+    }
+  },
+  "forbidden_tweaks_all_versions": [
+    "DISABLE_DEFENDER",
+    "PERMANENT_DISABLE_WINDOWS_UPDATE",
+    "DELETE_SYSTEM32_FILES",
+    "STOP_RPCSS_SERVICE",
+    "STOP_DCOMLAUNCH_SERVICE"
+  ]
+}

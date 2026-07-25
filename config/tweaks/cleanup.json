@@ -1,0 +1,142 @@
+[
+  {
+    "id": "TWEAK_CLEAN_001",
+    "name": "Windows Temp Folder Cache Cleaner",
+    "description": "Cleans temporary files from C:\\Windows\\Temp without deleting system files.",
+    "category": "CLEANUP",
+    "risk_level": "LOW",
+    "risk_score": 10,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Low",
+    "user_visible_change": "Disk Space Reclaimed",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "folder_size",
+      "path": "C:\\Windows\\Temp",
+      "threshold_mb": 100
+    },
+    "apply_method": {
+      "type": "folder_clean",
+      "target_dir": "C:\\Windows\\Temp",
+      "safe_file_extensions": [".tmp", ".log", ".bak", ".chk"]
+    },
+    "rollback_method": {
+      "type": "none",
+      "note": "Temporary file deletion is non-reversible by nature."
+    },
+    "verification_method": {
+      "type": "folder_size_below",
+      "path": "C:\\Windows\\Temp",
+      "target_mb": 10
+    }
+  },
+  {
+    "id": "TWEAK_CLEAN_002",
+    "name": "User Profile Temp Directory Cleaner",
+    "description": "Cleans user temporary cache files from %LOCALAPPDATA%\\Temp.",
+    "category": "CLEANUP",
+    "risk_level": "LOW",
+    "risk_score": 10,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": false,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Low",
+    "user_visible_change": "Disk Space Reclaimed",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "folder_size",
+      "path": "%TEMP%",
+      "threshold_mb": 200
+    },
+    "apply_method": {
+      "type": "folder_clean",
+      "target_dir": "%TEMP%",
+      "safe_file_extensions": [".tmp", ".log", ".bak"]
+    },
+    "rollback_method": {
+      "type": "none",
+      "note": "Temporary cache file deletion is non-reversible."
+    },
+    "verification_method": {
+      "type": "folder_size_below",
+      "path": "%TEMP%",
+      "target_mb": 20
+    }
+  },
+  {
+    "id": "TWEAK_CLEAN_003",
+    "name": "Windows Update Cache Purge",
+    "description": "Safely purges downloaded Windows Update installation cache files.",
+    "category": "CLEANUP",
+    "risk_level": "LOW",
+    "risk_score": 15,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Medium",
+    "user_visible_change": "Disk Space Reclaimed",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "folder_size",
+      "path": "C:\\Windows\\SoftwareDistribution\\Download",
+      "threshold_mb": 500
+    },
+    "apply_method": {
+      "type": "folder_clean",
+      "target_dir": "C:\\Windows\\SoftwareDistribution\\Download",
+      "safe_file_extensions": ["*"]
+    },
+    "rollback_method": {
+      "type": "none",
+      "note": "Update installation cache will automatically re-download if needed."
+    },
+    "verification_method": {
+      "type": "folder_size_below",
+      "path": "C:\\Windows\\SoftwareDistribution\\Download",
+      "target_mb": 50
+    }
+  },
+  {
+    "id": "TWEAK_CLEAN_004",
+    "name": "Windows Error Reporting Log Purge",
+    "description": "Purges accumulated crash log dump files from Windows Error Reporting.",
+    "category": "CLEANUP",
+    "risk_level": "LOW",
+    "risk_score": 10,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Low",
+    "user_visible_change": "Disk Space Reclaimed",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "folder_size",
+      "path": "C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive",
+      "threshold_mb": 50
+    },
+    "apply_method": {
+      "type": "folder_clean",
+      "target_dir": "C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive",
+      "safe_file_extensions": ["*"]
+    },
+    "rollback_method": {
+      "type": "none",
+      "note": "Error log dump files do not affect OS operation."
+    },
+    "verification_method": {
+      "type": "folder_size_below",
+      "path": "C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive",
+      "target_mb": 5
+    }
+  }
+]

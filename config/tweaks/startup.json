@@ -1,0 +1,156 @@
+[
+  {
+    "id": "TWEAK_STARTUP_001",
+    "name": "Cortana Auto-Startup Deactivation",
+    "description": "Disables Cortana voice assistant auto-startup at Windows boot.",
+    "category": "STARTUP",
+    "risk_level": "LOW",
+    "risk_score": 10,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Low",
+    "user_visible_change": "Cortana Disabled",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "registry",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search",
+      "value_name": "AllowCortana",
+      "expected_value": 0
+    },
+    "apply_method": {
+      "type": "registry",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search",
+      "value_name": "AllowCortana",
+      "value_type": "REG_DWORD",
+      "value_data": 0
+    },
+    "rollback_method": {
+      "type": "registry",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search",
+      "value_name": "AllowCortana",
+      "value_type": "REG_DWORD",
+      "value_data": 1
+    },
+    "verification_method": {
+      "type": "registry_match",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search",
+      "value_name": "AllowCortana",
+      "expected_value": 0
+    }
+  },
+  {
+    "id": "TWEAK_STARTUP_002",
+    "name": "Windows Telemetry Service Optimization",
+    "description": "Configures Connected User Experiences and Telemetry (DiagTrack) service startup to Manual.",
+    "category": "SECURITY_PRIVACY",
+    "risk_level": "LOW",
+    "risk_score": 15,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Low",
+    "user_visible_change": "Privacy Enhanced",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "service",
+      "service_name": "DiagTrack",
+      "expected_start_type": "demand"
+    },
+    "apply_method": {
+      "type": "service",
+      "service_name": "DiagTrack",
+      "start_type": "demand"
+    },
+    "rollback_method": {
+      "type": "service",
+      "service_name": "DiagTrack",
+      "start_type": "auto"
+    },
+    "verification_method": {
+      "type": "service_match",
+      "service_name": "DiagTrack",
+      "expected_start_type": "demand"
+    }
+  },
+  {
+    "id": "TWEAK_STARTUP_003",
+    "name": "Maps Broker Service Startup Tuning",
+    "description": "Sets Downloaded Maps Manager (MapsBroker) service startup to Manual.",
+    "category": "STARTUP",
+    "risk_level": "LOW",
+    "risk_score": 10,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Low",
+    "user_visible_change": "None",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "service",
+      "service_name": "MapsBroker",
+      "expected_start_type": "demand"
+    },
+    "apply_method": {
+      "type": "service",
+      "service_name": "MapsBroker",
+      "start_type": "demand"
+    },
+    "rollback_method": {
+      "type": "service",
+      "service_name": "MapsBroker",
+      "start_type": "auto"
+    },
+    "verification_method": {
+      "type": "service_match",
+      "service_name": "MapsBroker",
+      "expected_start_type": "demand"
+    }
+  },
+  {
+    "id": "TWEAK_STARTUP_004",
+    "name": "Retail Demo Service Deactivation",
+    "description": "Disables Retail Demo Service (RetailDemo) background service.",
+    "category": "STARTUP",
+    "risk_level": "LOW",
+    "risk_score": 10,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Low",
+    "user_visible_change": "None",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "service",
+      "service_name": "RetailDemo",
+      "expected_start_type": "disabled"
+    },
+    "apply_method": {
+      "type": "service",
+      "service_name": "RetailDemo",
+      "start_type": "disabled"
+    },
+    "rollback_method": {
+      "type": "service",
+      "service_name": "RetailDemo",
+      "start_type": "demand"
+    },
+    "verification_method": {
+      "type": "service_match",
+      "service_name": "RetailDemo",
+      "expected_start_type": "disabled"
+    }
+  }
+]

@@ -1,0 +1,32 @@
+# Python & PyTest
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.pyc
+
+# Distribution & PyInstaller Builds
+build/
+dist/
+*.spec
+*.egg-info/
+.eggs/
+
+# Cryptographic Keys (DO NOT COMMIT)
+*.pem
+private_key.pem
+vendor_keys/
+
+# Local Sessions & Diagnostic Reports
+sessions/
+logs/
+reports/*.json
+reports/*.html
+winforge.log
+
+# IDE & OS Caches
+.vscode/
+.idea/
+.gemini/
+Thumbs.db
+Desktop.ini

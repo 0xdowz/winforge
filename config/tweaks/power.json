@@ -1,0 +1,154 @@
+[
+  {
+    "id": "TWEAK_POWER_001",
+    "name": "High Performance Power Plan Overlay",
+    "description": "Activates Windows High Performance power scheme to minimize CPU frequency throttling.",
+    "category": "POWER",
+    "risk_level": "LOW",
+    "risk_score": 15,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Medium",
+    "user_visible_change": "Power Scheme Switch",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "power_plan",
+      "expected_guid": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
+    },
+    "apply_method": {
+      "type": "power_plan",
+      "guid": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
+    },
+    "rollback_method": {
+      "type": "power_plan",
+      "guid": "381b4222-f694-41f0-9685-ff5bb260df2e"
+    },
+    "verification_method": {
+      "type": "power_plan_match",
+      "expected_guid": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
+    }
+  },
+  {
+    "id": "TWEAK_POWER_002",
+    "name": "USB Selective Suspend Disabling",
+    "description": "Disables USB selective suspend to prevent USB audio interface & peripheral disconnect latency.",
+    "category": "POWER",
+    "risk_level": "LOW",
+    "risk_score": 15,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Low",
+    "user_visible_change": "None",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "power_setting",
+      "subgroup": "2a737441-1930-4402-8d77-b2bebba308a3",
+      "setting": "48e66770-2293-411b-8264-c946e09d38fb",
+      "expected_value": 0
+    },
+    "apply_method": {
+      "type": "power_setting",
+      "subgroup": "2a737441-1930-4402-8d77-b2bebba308a3",
+      "setting": "48e66770-2293-411b-8264-c946e09d38fb",
+      "value": 0
+    },
+    "rollback_method": {
+      "type": "power_setting",
+      "subgroup": "2a737441-1930-4402-8d77-b2bebba308a3",
+      "setting": "48e66770-2293-411b-8264-c946e09d38fb",
+      "value": 1
+    },
+    "verification_method": {
+      "type": "power_setting_match",
+      "subgroup": "2a737441-1930-4402-8d77-b2bebba308a3",
+      "setting": "48e66770-2293-411b-8264-c946e09d38fb",
+      "expected_value": 0
+    }
+  },
+  {
+    "id": "TWEAK_POWER_003",
+    "name": "PCI Express Link State Power Management",
+    "description": "Sets PCI Express power management to Off to eliminate GPU/NVMe sleep latency.",
+    "category": "POWER",
+    "risk_level": "LOW",
+    "risk_score": 15,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Low",
+    "user_visible_change": "None",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "power_setting",
+      "subgroup": "503e94fe-9e28-4f1a-8e29-193e54221161",
+      "setting": "ee12f906-9904-4f03-8e3a-178c92e06c6e",
+      "expected_value": 0
+    },
+    "apply_method": {
+      "type": "power_setting",
+      "subgroup": "503e94fe-9e28-4f1a-8e29-193e54221161",
+      "setting": "ee12f906-9904-4f03-8e3a-178c92e06c6e",
+      "value": 0
+    },
+    "rollback_method": {
+      "type": "power_setting",
+      "subgroup": "503e94fe-9e28-4f1a-8e29-193e54221161",
+      "setting": "ee12f906-9904-4f03-8e3a-178c92e06c6e",
+      "value": 1
+    },
+    "verification_method": {
+      "type": "power_setting_match",
+      "subgroup": "503e94fe-9e28-4f1a-8e29-193e54221161",
+      "setting": "ee12f906-9904-4f03-8e3a-178c92e06c6e",
+      "expected_value": 0
+    }
+  },
+  {
+    "id": "TWEAK_POWER_004",
+    "name": "Hard Disk Idle Timeout Extension",
+    "description": "Sets secondary hard disk turn-off timeout to 0 (Never) during active session.",
+    "category": "POWER",
+    "risk_level": "LOW",
+    "risk_score": 10,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Low",
+    "user_visible_change": "None",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "power_setting",
+      "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442",
+      "setting": "6738e2c4-27cd-4406-a690-093a893699b6",
+      "expected_value": 0
+    },
+    "apply_method": {
+      "type": "power_setting",
+      "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442",
+      "setting": "6738e2c4-27cd-4406-a690-093a893699b6",
+      "value": 0
+    },
+    "rollback_method": {
+      "type": "power_setting",
+      "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442",
+      "setting": "6738e2c4-27cd-4406-a690-093a893699b6",
+      "value": 20
+    },
+    "verification_method": {
+      "type": "power_setting_match",
+      "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442",
+      "setting": "6738e2c4-27cd-4406-a690-093a893699b6",
+      "expected_value": 0
+    }
+  }
+]

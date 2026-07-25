@@ -1,0 +1,186 @@
+[
+  {
+    "id": "TWEAK_GAME_001",
+    "name": "GPU Scheduling Priority Optimization",
+    "description": "Sets GPU scheduling priority for graphics tasks to high performance (Value 8).",
+    "category": "GAMING",
+    "risk_level": "LOW",
+    "risk_score": 10,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Medium",
+    "user_visible_change": "None",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "registry",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+      "value_name": "GPU Priority",
+      "expected_value": 8
+    },
+    "apply_method": {
+      "type": "registry",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+      "value_name": "GPU Priority",
+      "value_type": "REG_DWORD",
+      "value_data": 8
+    },
+    "rollback_method": {
+      "type": "registry",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+      "value_name": "GPU Priority",
+      "value_type": "REG_DWORD",
+      "value_data": 2
+    },
+    "verification_method": {
+      "type": "registry_match",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+      "value_name": "GPU Priority",
+      "expected_value": 8
+    }
+  },
+  {
+    "id": "TWEAK_GAME_002",
+    "name": "System Responsiveness Priority Tuning",
+    "description": "Allocates 100% CPU priority to active foreground applications.",
+    "category": "GAMING",
+    "risk_level": "LOW",
+    "risk_score": 15,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Low",
+    "user_visible_change": "None",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "registry",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+      "value_name": "SystemResponsiveness",
+      "expected_value": 0
+    },
+    "apply_method": {
+      "type": "registry",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+      "value_name": "SystemResponsiveness",
+      "value_type": "REG_DWORD",
+      "value_data": 0
+    },
+    "rollback_method": {
+      "type": "registry",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+      "value_name": "SystemResponsiveness",
+      "value_type": "REG_DWORD",
+      "value_data": 20
+    },
+    "verification_method": {
+      "type": "registry_match",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+      "value_name": "SystemResponsiveness",
+      "expected_value": 0
+    }
+  },
+  {
+    "id": "TWEAK_GAME_003",
+    "name": "Windows Game Bar Telemetry Delay",
+    "description": "Disables GameDVR background recording overhead for non-gaming workloads.",
+    "category": "GAMING",
+    "risk_level": "LOW",
+    "risk_score": 10,
+    "risk_category": "SAFE",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Low",
+    "user_visible_change": "None",
+    "technician_only": false,
+    "detection_logic": {
+      "type": "registry",
+      "hive": "HKCU",
+      "key": "System\\GameConfigStore",
+      "value_name": "GameDVR_Enabled",
+      "expected_value": 0
+    },
+    "apply_method": {
+      "type": "registry",
+      "hive": "HKCU",
+      "key": "System\\GameConfigStore",
+      "value_name": "GameDVR_Enabled",
+      "value_type": "REG_DWORD",
+      "value_data": 0
+    },
+    "rollback_method": {
+      "type": "registry",
+      "hive": "HKCU",
+      "key": "System\\GameConfigStore",
+      "value_name": "GameDVR_Enabled",
+      "value_type": "REG_DWORD",
+      "value_data": 1
+    },
+    "verification_method": {
+      "type": "registry_match",
+      "hive": "HKCU",
+      "key": "System\\GameConfigStore",
+      "value_name": "GameDVR_Enabled",
+      "expected_value": 0
+    }
+  },
+  {
+    "id": "TWEAK_GAME_004",
+    "name": "Network Throttling Index Disabling",
+    "description": "Disables Windows network throttling mechanism during heavy network gaming.",
+    "category": "GAMING",
+    "risk_level": "MEDIUM",
+    "risk_score": 85,
+    "risk_category": "TECHNICIAN_ONLY",
+    "schema_version": "2.0.0",
+    "supported_windows_versions": ["10", "11"],
+    "requires_admin": true,
+    "requires_reboot": false,
+    "performance_gain_estimate": "Medium",
+    "user_visible_change": "None",
+    "technician_only": true,
+    "detection_logic": {
+      "type": "registry",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+      "value_name": "NetworkThrottlingIndex",
+      "expected_value": 4294967295
+    },
+    "apply_method": {
+      "type": "registry",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+      "value_name": "NetworkThrottlingIndex",
+      "value_type": "REG_DWORD",
+      "value_data": 4294967295
+    },
+    "rollback_method": {
+      "type": "registry",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+      "value_name": "NetworkThrottlingIndex",
+      "value_type": "REG_DWORD",
+      "value_data": 10
+    },
+    "verification_method": {
+      "type": "registry_match",
+      "hive": "HKLM",
+      "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+      "value_name": "NetworkThrottlingIndex",
+      "expected_value": 4294967295
+    }
+  }
+]
