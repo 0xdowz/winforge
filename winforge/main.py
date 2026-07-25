@@ -119,13 +119,58 @@ def main():
     # Mode 2b: Demo / Screenshot Preview Mode (read-only, no user prompts)
     if is_demo:
         from winforge.benchmark.runner import run_benchmark_suite
-        console.print("\n[bold cyan][DEMO MODE — Read-Only Preview][/bold cyan]\n")
+        from winforge.core.session import SessionManager
+        from rich.panel import Panel
+        from rich.text import Text
+        from rich.rule import Rule
+        from rich.prompt import Prompt
+
+        console.print()
+        console.print(Rule("[bold cyan]WINFORGE :: DEMO MODE — Read-Only Preview[/bold cyan]", style="cyan"))
+        console.print()
+
+        # 1. Full system scan
         report = run_full_system_scan()
         render_health_dashboard(report)
         render_hardware_summary(report)
         render_warnings(report)
+
+        # 2. Benchmark suite
         bench = run_benchmark_suite()
         render_benchmark_results(bench)
+
+        # 3. Session + report paths (read-only, no mutations)
+        session_mgr = SessionManager()
+        filepath = export_system_report(report)
+
+        # 4. Final summary panel
+        score = round(report.health_score, 1)
+        warn_count = len(report.warnings)
+
+        summary = Text()
+        summary.append("  System Health Score:      ", style="bold white")
+        summary.append(f"{score} / 100\n", style="bold yellow")
+        summary.append("  Benchmark Metrics:        ", style="bold white")
+        summary.append("5 metrics captured (CPU, RAM, Disk, Timer, DNS)\n", style="bold cyan")
+        summary.append("  System Warnings:          ", style="bold white")
+        if warn_count:
+            summary.append(f"{warn_count} degradation issue(s) detected\n", style="bold yellow")
+        else:
+            summary.append("None — system is in optimal state\n", style="bold green")
+        summary.append("  JSON Report:       ", style="bold white")
+        summary.append(f"{filepath}\n", style="dim white")
+        summary.append("  HTML Report:       ", style="bold white")
+        summary.append(f"{session_mgr.get_report_html_path()}\n", style="bold green")
+
+        console.print()
+        console.print(Panel(
+            summary,
+            title="[bold green]✓ WinForge Demo Completed Successfully[/bold green]",
+            border_style="green"
+        ))
+        console.print()
+
+        Prompt.ask("[bold cyan]Press Enter to exit[/bold cyan]")
         sys.exit(0)
 
     # Mode 3: Production Execution / Optimize
