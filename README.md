@@ -15,7 +15,7 @@
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://python.org)
 [![Version](https://img.shields.io/badge/version-1.0.0-orange.svg)](CHANGELOG.md)
 
-**WinForge** is a policy-driven, non-destructive Windows system diagnostic and optimization toolkit created and maintained by **@0xdowz**. Designed for IT service technicians, system administrators, and performance enthusiasts, WinForge provides a safe, transparent, and fully reversible CLI environment for Windows health inspection and system tuning.
+**WinForge** is a policy-driven, non-destructive Windows system diagnostic and optimization toolkit created and maintained by **@0xdowz**. Built for IT service technicians, system administrators, and performance enthusiasts, WinForge provides a safe, transparent, and fully reversible CLI environment for Windows health inspection and system tuning.
 
 ---
 
@@ -65,9 +65,9 @@ WinForge addresses this by treating system optimization as a **transactional, st
 
 ---
 
-## Terminal Dashboard Preview
+## Terminal Dashboard & Screenshots
 
-![WinForge Dashboard](docs/images/dashboard.png)
+See [docs/images/README.md](docs/images/README.md) for full image capture details and high-resolution previews.
 
 ```
 ┌──────────────────── WINFORGE :: SYSTEM HEALTH DASHBOARD ────────────────────┐
@@ -188,6 +188,12 @@ WinForge.exe --license-info
 
 ---
 
+## Project Roadmap
+
+To review planned feature updates, upcoming profiling tools, and release milestones, see [ROADMAP.md](ROADMAP.md).
+
+---
+
 ## Frequently Asked Questions (FAQ)
 
 #### Q: Will WinForge disable Windows Defender or Windows Update?
@@ -231,7 +237,7 @@ For security disclosures or vulnerability reporting, please review our [SECURITY
 
 ## Support Development
 
-WinForge is 100% free software. If you find WinForge useful and wish to support future development, you can optionally support the maintainer:
+WinForge is 100% free software. If you find WinForge useful and wish to support ongoing maintenance, OS compatibility testing, and future feature development, you can support the project via GitHub Sponsors:
 
 - [Sponsor @0xdowz on GitHub](https://github.com/sponsors/0xdowz)
 - [Follow @0xdowz on GitHub](https://github.com/0xdowz)
