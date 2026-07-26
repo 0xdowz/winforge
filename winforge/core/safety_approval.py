@@ -20,9 +20,21 @@ class SafetyApprovalResult(BaseModel):
 class SafetyApprovalEngine:
     """Evaluates real-time system safety conditions before allowing modification execution."""
 
-    def evaluate_realtime_safety(self) -> SafetyApprovalResult:
+    def evaluate_realtime_safety(self, mock: bool = False) -> SafetyApprovalResult:
         """Runs pre-flight safety checks (Elevation, Disk Space, Battery, System Restore)."""
-        logger.info("Executing real-time safety approval pre-flight checks...")
+        logger.info(f"Executing real-time safety approval pre-flight checks (mock={mock})...")
+        if mock:
+            return SafetyApprovalResult(
+                approved=True,
+                reason="SAFETY APPROVED (SIMULATED): Real-time pre-flight checks passed in simulation mode.",
+                checks_passed={
+                    "admin_privileges": True,
+                    "sufficient_disk_space": True,
+                    "battery_healthy": True,
+                    "system_restore_available": True
+                }
+            )
+
         checks: Dict[str, bool] = {}
         failure_reasons: list[str] = []
 

@@ -1,4 +1,4 @@
-name: WinForge CI Automated Test Suite
+name: WinForge CI
 
 on:
   push:
@@ -8,22 +8,38 @@ on:
 
 jobs:
   test:
+    name: Test Suite — Python ${{ matrix.python-version }}
     runs-on: windows-latest
 
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
 
-    - name: Run PyTest test suite
-      run: |
-        python -m pytest tests/
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run WinForge test suite
+        run: python -m pytest tests/ -v --tb=short
+
+      - name: Verify CLI imports load cleanly
+        run: python -c "from winforge.main import main; print('CLI import OK')"

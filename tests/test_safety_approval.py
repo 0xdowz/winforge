@@ -16,3 +16,11 @@ def test_safety_approval_mock_checks():
         res = engine.evaluate_realtime_safety()
         assert res.approved is True
         assert "passed" in res.reason.lower()
+
+
+def test_safety_approval_simulated_mode():
+    engine = SafetyApprovalEngine()
+    res = engine.evaluate_realtime_safety(mock=True)
+    assert res.approved is True
+    assert "SIMULATED" in res.reason
+

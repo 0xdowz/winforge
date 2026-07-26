@@ -68,7 +68,7 @@ class OptimizationExecutor:
             return tracker, res
 
         # 2. ANALYZED -> RECOMMENDED (Safety Approval Check)
-        safety_res = self.safety_engine.evaluate_realtime_safety()
+        safety_res = self.safety_engine.evaluate_realtime_safety(mock=mock_execution)
         tracker.transition_to(TweakState.RECOMMENDED, reason=safety_res.reason)
 
         if not safety_res.approved:
