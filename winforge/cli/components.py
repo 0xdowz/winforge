@@ -1,13 +1,12 @@
 """
 WinForge CLI Components — Modern Terminal Presentation Library.
 Provides clean visual hierarchy, section dividers, status badges, and hardware tables.
-Uses responsive width detection to adapt gracefully to all terminal windows.
+Enforces max 90-column width for clean rendering across CMD, PowerShell, and Windows Terminal.
 """
 
 import shutil
 from rich.console import Console
 from rich.table import Table
-from rich.panel import Panel
 from rich.text import Text
 from rich.rule import Rule
 
@@ -15,13 +14,9 @@ from winforge.models.system import SystemHealthReport
 from winforge.models.tweak import Tweak
 from winforge.cli.formatting import format_status_badge, format_risk_badge
 
-# Single shared console with terminal-aware width
-_term_width = min(shutil.get_terminal_size((120, 32)).columns, 160)
+# Cap width to 90 columns for perfect rendering in CMD / PowerShell
+_term_width = min(shutil.get_terminal_size((80, 24)).columns, 90)
 console = Console(width=_term_width)
-
-_NARROW = _term_width < 100
-_COMPONENT_COL = 18 if _NARROW else 24
-_SPEC_COL_FIXED = 40 if _NARROW else None
 
 
 def _section_rule(label: str, style: str = "dim cyan"):
@@ -37,28 +32,35 @@ def render_health_dashboard(report: SystemHealthReport):
 
     if score >= 85:
         score_style = "bold green"
-        badge_text = "OPTIMAL STATE"
+        badge_text = "OPTIMAL"
     elif score >= 70:
         score_style = "bold yellow"
         badge_text = "NEEDS ATTENTION"
     else:
         score_style = "bold red"
-        badge_text = "CRITICAL DEGRADATION"
+        badge_text = "CRITICAL"
 
     _section_rule("System Health Overview", "dim cyan")
 
-    score_text = Text()
-    score_text.append("  Health Score:  ", style="bold white")
-    score_text.append(f"{score} / 100", style=score_style)
-    score_text.append(f"  [{badge_text}]\n\n", style=score_style)
+    console.print("  Health Score:")
+    console.print(f"  [bold white]{score} / 100[/bold white]  [{score_style}]{badge_text}[/{score_style}]\n")
 
-    score_text.append("  Category Breakdown:\n", style="bold cyan")
-    score_text.append(f"   • Performance Score:          {round(report.categories.performance_score, 1)} / 100\n", style="bold white")
-    score_text.append(f"   • Security & Privacy:         {round(report.categories.security_score, 1)} / 100\n", style="bold white")
-    score_text.append(f"   • Maintenance & Cleanliness: {round(report.categories.maintenance_score, 1)} / 100\n", style="bold white")
-    score_text.append(f"   • Startup & Service Hygiene:  {round(report.categories.startup_score, 1)} / 100\n", style="bold white")
+    console.print("  Category Breakdown:")
+    
+    perf = round(report.categories.performance_score, 1)
+    sec = round(report.categories.security_score, 1)
+    maint = round(report.categories.maintenance_score, 1)
+    start = round(report.categories.startup_score, 1)
 
-    console.print(score_text)
+    p_icon = "[green]✓[/green]" if perf >= 80 else "[yellow]⚠[/yellow]"
+    s_icon = "[green]✓[/green]" if sec >= 80 else "[yellow]⚠[/yellow]"
+    m_icon = "[green]✓[/green]" if maint >= 80 else "[yellow]⚠[/yellow]"
+    st_icon = "[green]✓[/green]" if start >= 80 else "[yellow]⚠[/yellow]"
+
+    console.print(f"   {p_icon} Performance Score:          {perf} / 100")
+    console.print(f"   {s_icon} Security & Privacy:         {sec} / 100")
+    console.print(f"   {m_icon} Maintenance & Cleanliness: {maint} / 100")
+    console.print(f"   {st_icon} Startup & Service Hygiene:  {start} / 100")
 
 
 def render_hardware_summary(report: SystemHealthReport):
@@ -71,8 +73,8 @@ def render_hardware_summary(report: SystemHealthReport):
         expand=False,
         show_lines=False,
     )
-    table.add_column("Component", style="bold cyan", width=_COMPONENT_COL, no_wrap=True)
-    table.add_column("Specification Details", style="bold white", max_width=_SPEC_COL_FIXED)
+    table.add_column("Component", style="bold cyan", width=22, no_wrap=True)
+    table.add_column("Specification Details", style="bold white", max_width=58)
 
     table.add_row("Operating System", f"{report.os.product_name} ({report.os.architecture}) [Build {report.os.build_number}]")
     table.add_row("Processor (CPU)", f"{report.cpu.name} ({report.cpu.logical_cores} Cores)")
@@ -114,8 +116,8 @@ def render_benchmark_results(bench):
         show_lines=True,
         expand=False,
     )
-    table.add_column("Benchmark Metric", style="bold cyan", width=32, no_wrap=True)
-    table.add_column("Result", style="bold white", justify="right", width=18)
+    table.add_column("Benchmark Metric", style="bold cyan", width=30, no_wrap=True)
+    table.add_column("Result", style="bold white", justify="right", width=16)
     table.add_column("Unit", style="dim white", width=10)
 
     table.add_row("CPU Execution Latency",        f"{bench.cpu_latency_ms}",         "ms")
@@ -136,29 +138,16 @@ def render_dry_run_summary(session_mgr, report, sim_res):
         projected = sim_res.get("simulated_health_score", baseline)
         delta = sim_res.get("score_delta", 0)
 
-        score_text = Text()
-        score_text.append("  Baseline Score:      ", style="bold white")
-        score_text.append(f"{baseline} / 100\n", style="bold yellow")
-        score_text.append("  Projected Score:     ", style="bold white")
-        score_text.append(f"{projected} / 100\n", style="bold green")
-        score_text.append("  Score Improvement:   ", style="bold white")
-        score_text.append(f"+{delta} points\n", style="bold cyan")
-
-        console.print(Panel(score_text, title="[bold yellow]Score Projection[/bold yellow]", border_style="green"))
-        console.print()
+        console.print("  [bold white]Baseline Score:[/bold white]    " + f"[yellow]{baseline} / 100[/yellow]")
+        console.print("  [bold white]Projected Score:[/bold white]   " + f"[green]{projected} / 100[/green]")
+        console.print("  [bold white]Score Improvement:[/bold white] " + f"[cyan]+{delta} points[/cyan]\n")
 
     render_warnings(report)
 
-    path_text = Text()
-    path_text.append("  Session ID:       ", style="bold white")
-    path_text.append(f"{session_mgr.session_id}\n", style="bold cyan")
-    path_text.append("  Simulation Log:   ", style="bold white")
-    path_text.append(f"{session_mgr.session_dir / 'findings.json'}\n", style="dim white")
-    path_text.append("  HTML Report:      ", style="bold white")
-    path_text.append(f"{session_mgr.get_report_html_path()}\n", style="bold green")
-
-    console.print(Panel(path_text, title="[bold yellow]Session Report Generated[/bold yellow]", border_style="cyan"))
-    console.print()
+    console.print("  [bold white]Session Reports:[/bold white]")
+    console.print(f"   • Session ID:    [cyan]{session_mgr.session_id}[/cyan]")
+    console.print(f"   • Simulation:    [dim]{session_mgr.session_dir / 'findings.json'}[/dim]")
+    console.print(f"   • HTML Report:   [green]{session_mgr.get_report_html_path()}[/green]\n")
 
 
 def render_tweak_inspection_card(tweak: Tweak):
@@ -171,8 +160,8 @@ def render_tweak_inspection_card(tweak: Tweak):
         show_lines=False,
         expand=False,
     )
-    table.add_column("Property", style="bold cyan", width=24, no_wrap=True)
-    table.add_column("Specification / Details", style="bold white")
+    table.add_column("Property", style="bold cyan", width=22, no_wrap=True)
+    table.add_column("Specification / Details", style="bold white", max_width=58)
 
     table.add_row("Tweak Name", tweak.name)
     table.add_row("Category", tweak.category.value if hasattr(tweak.category, "value") else str(tweak.category))
