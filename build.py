@@ -15,6 +15,21 @@ def build_executable():
     dist_dir = project_root / "dist"
     main_script = project_root / "winforge" / "main.py"
 
+    # Clean existing dist file if unlocked
+    target_exe = dist_dir / ("WinForge.exe" if sys.platform == "win32" else "WinForge")
+    if target_exe.exists():
+        try:
+            target_exe.unlink()
+        except Exception:
+            # If locked by Windows Defender or OS handle, move aside
+            try:
+                bak = dist_dir / "WinForge.exe.old"
+                if bak.exists():
+                    bak.unlink(missing_ok=True)
+                target_exe.rename(bak)
+            except Exception:
+                pass
+
     # PyInstaller command configuration
     sep = ";" if sys.platform == "win32" else ":"
 
