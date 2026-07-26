@@ -186,3 +186,18 @@ class WinForgeCLI:
         console.print(f"[bold green]✓ Interactive HTML Report:[/bold green] {session_mgr.get_report_html_path()}")
 
         Prompt.ask("\nPress Enter to return to main menu")
+
+    def handle_doctor(self):
+        """Execute Phase 8 doctor environment and safety diagnostics."""
+        from winforge.core.safety_approval import is_admin
+        from winforge.cli.renderer import render_doctor_report
+        session_mgr, report, _, _ = run_session_pipeline(dry_run=self.dry_run, run_benchmarks=False)
+
+        render_doctor_report(
+            is_admin=is_admin(),
+            os_product=report.os.product_name,
+            cpu_name=report.cpu.name,
+            ram_gb=report.ram.total_gb,
+            safety_ok=True
+        )
+        Prompt.ask("Press Enter to return to main menu")

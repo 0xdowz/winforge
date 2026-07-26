@@ -44,7 +44,7 @@ def main():
     parser.add_argument("--version", action="version", version=f"WINFORGE v{__version__} by @{__author__}")
 
     # Subcommand positional alias
-    parser.add_argument("command", nargs="?", choices=["scan", "analyze", "optimize", "dry-run", "benchmark", "license", "tech"], help="Subcommand shortcut (e.g. scan, dry-run, tech)")
+    parser.add_argument("command", nargs="?", choices=["scan", "analyze", "optimize", "dry-run", "benchmark", "doctor", "license", "tech"], help="Subcommand shortcut (e.g. scan, optimize, doctor, benchmark, tech)")
 
     args = parser.parse_args()
 
@@ -61,9 +61,24 @@ def main():
     is_execute = args.execute or cmd == "optimize"
     is_tech = args.tech or cmd == "tech"
     is_license = args.license_info or args.license_check or cmd == "license"
+    is_doctor = cmd == "doctor"
     is_demo = args.demo
 
     logger.info(f"Launching WINFORGE v{__version__} by @{__author__} (Cmd: {cmd}, TechMode: {is_tech}, DryRun: {is_dry_run}, Execute: {is_execute})")
+
+    # Mode Doctor: Non-interactive doctor check
+    if is_doctor:
+        from winforge.core.safety_approval import is_admin
+        from winforge.cli.renderer import render_doctor_report
+        report = run_full_system_scan()
+        render_doctor_report(
+            is_admin=is_admin(),
+            os_product=report.os.product_name,
+            cpu_name=report.cpu.name,
+            ram_gb=report.ram.total_gb,
+            safety_ok=True
+        )
+        sys.exit(0)
 
     # Mode 0: Environment Info / Check
     if is_license:

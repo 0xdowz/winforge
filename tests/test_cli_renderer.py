@@ -1,4 +1,7 @@
-from winforge.cli.renderer import render_optimization_plan, render_safety_lock_status, render_actionable_error
+from winforge.cli.renderer import render_optimization_plan, render_safety_lock_status, render_actionable_error, render_doctor_report
+from winforge.cli.themes import ThemeManager
+from winforge.cli.formatting import format_status_badge, format_risk_badge
+from winforge.cli.progress import StepTracker
 from winforge.models.tweak import Tweak, TweakCategory, RiskLevel, RiskCategory
 
 
@@ -23,3 +26,19 @@ def test_cli_renderer_functions():
         reason="Windows Server OS detected.",
         suggested_action="Run on Windows 10/11."
     )
+    render_doctor_report(is_admin=True, os_product="Windows 11 Pro", cpu_name="Test CPU", ram_gb=16.0, safety_ok=True)
+
+
+def test_cli_design_system_components():
+    tm = ThemeManager("dark")
+    assert tm.get_style("primary") == "cyan"
+
+    b1 = format_status_badge(90.0)
+    assert b1 is not None
+
+    r1 = format_risk_badge(10)
+    assert "SAFE" in r1
+
+    tracker = StepTracker("Test Pipeline", total_steps=2)
+    tracker.log_step("Step 1", status="COMPLETED", success=True)
+    tracker.finish("Pipeline completed successfully")

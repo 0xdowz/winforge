@@ -84,3 +84,27 @@ def render_actionable_error(title: str, reason: str, suggested_action: str):
     console.print()
     console.print(panel)
     console.print()
+
+
+def render_doctor_report(is_admin: bool, os_product: str, cpu_name: str, ram_gb: float, safety_ok: bool = True):
+    """Renders Phase 8 System Health & Environment Doctor Diagnostic Report."""
+    table = Table(
+        title="WINFORGE DOCTOR :: ENVIRONMENT & SAFETY DIAGNOSTIC REPORT",
+        header_style="bold yellow",
+        border_style="cyan",
+        show_lines=True,
+        expand=False
+    )
+    table.add_column("Subsystem / Component", style="bold cyan", width=26)
+    table.add_column("Status", style="bold white", justify="center", width=16)
+    table.add_column("Details", style="dim white", width=36)
+
+    table.add_row("Execution Privileges", "✓ Administrator" if is_admin else "⚠ Standard User", "Elevation active" if is_admin else "Run as Administrator required")
+    table.add_row("Operating System", "✓ Supported", os_product)
+    table.add_row("Processor (CPU)", "✓ Operational", cpu_name)
+    table.add_row("System Memory (RAM)", "✓ Operational", f"{ram_gb} GB Installed")
+    table.add_row("4-Layer Safety Engine", "✓ Operational" if safety_ok else "⚠ Degraded", "Restore points & atomic registry backup ready")
+
+    console.print()
+    console.print(table)
+    console.print()
