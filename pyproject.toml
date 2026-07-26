@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "WINFORGE :: Free Open-Source Windows System Optimization CLI Framework"
 readme = "README.md"
 requires-python = ">=3.12"
-license = { text = "MIT" }
+license = { file = "LICENSE" }
 authors = [
     { name = "0xdowz" }
 ]
@@ -17,7 +17,6 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: System Administrators",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: Microsoft :: Windows :: Windows 10",
     "Operating System :: Microsoft :: Windows :: Windows 11",
     "Programming Language :: Python :: 3.12",
@@ -43,6 +42,10 @@ dev = [
 
 [project.scripts]
 winforge = "winforge.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["winforge*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
