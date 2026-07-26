@@ -71,17 +71,17 @@ def render_health_dashboard(report: SystemHealthReport):
 
 
 def render_hardware_summary(report: SystemHealthReport):
-    """Renders hardware specification table with sleek layout."""
+    """Renders hardware specification table cleanly with box=None, padding=(0, 1)."""
     _section_rule("Hardware Specification", "dim cyan")
 
     table = Table(
-        header_style="bold yellow",
-        border_style="dim cyan",
+        box=None,
         expand=False,
-        show_lines=False,
+        padding=(0, 1),
+        header_style="bold yellow",
     )
     table.add_column("Component", style="bold cyan", width=22, no_wrap=True)
-    table.add_column("Specification Details", style="bold white", max_width=58)
+    table.add_column("Specification Details", style="bold white", max_width=62)
 
     table.add_row("Operating System", f"{report.os.product_name} ({report.os.architecture}) [Build {report.os.build_number}]")
     table.add_row("Processor (CPU)", f"{report.cpu.name} ({report.cpu.logical_cores} Cores)")
@@ -116,14 +116,14 @@ def render_warnings(report: SystemHealthReport):
 
 
 def render_benchmark_results(bench):
-    """Renders quantitative performance benchmark table."""
+    """Renders quantitative performance benchmark table cleanly with box=None, padding=(0, 1)."""
     _section_rule("Performance Benchmark Results", "dim cyan")
 
     table = Table(
-        header_style="bold yellow",
-        border_style="dim cyan",
-        show_lines=True,
+        box=None,
         expand=False,
+        padding=(0, 1),
+        header_style="bold yellow",
     )
     table.add_column("Benchmark Metric", style="bold cyan", width=30, no_wrap=True)
     table.add_column("Result", style="bold white", justify="right", width=16)
@@ -139,7 +139,7 @@ def render_benchmark_results(bench):
 
 
 def render_dry_run_summary(session_mgr, report, sim_res):
-    """Renders structured Dry-Run simulation summary."""
+    """Renders structured Dry-Run simulation summary without duplicate warnings."""
     _section_rule("Dry-Run Simulation Complete", "dim green")
 
     if sim_res:
@@ -151,8 +151,6 @@ def render_dry_run_summary(session_mgr, report, sim_res):
         console.print("  [bold white]Projected Score:[/bold white]   " + f"[green]{projected} / 100[/green]")
         console.print("  [bold white]Score Improvement:[/bold white] " + f"[cyan]+{delta} points[/cyan]\n")
 
-    render_warnings(report)
-
     console.print("  [bold white]Session Reports:[/bold white]")
     console.print(f"   • Session ID:    [cyan]{session_mgr.session_id}[/cyan]")
     console.print(f"   • Simulation:    [dim]{session_mgr.session_dir / 'findings.json'}[/dim]")
@@ -160,25 +158,17 @@ def render_dry_run_summary(session_mgr, report, sim_res):
 
 
 def render_tweak_inspection_card(tweak: Tweak):
-    """Renders granular Technician Mode Tweak Inspection Card."""
+    """Renders granular Technician Mode Tweak Inspection Card as aligned text list."""
     _section_rule(f"Tweak Inspection Card :: {tweak.id}", "dim magenta")
 
-    table = Table(
-        header_style="bold yellow",
-        border_style="dim magenta",
-        show_lines=False,
-        expand=False,
-    )
-    table.add_column("Property", style="bold cyan", width=22, no_wrap=True)
-    table.add_column("Specification / Details", style="bold white", max_width=58)
-
-    table.add_row("Tweak Name", tweak.name)
-    table.add_row("Category", tweak.category.value if hasattr(tweak.category, "value") else str(tweak.category))
-    table.add_row("Description", tweak.description)
-    table.add_row("Risk Rating", format_risk_badge(tweak.risk_score))
-    table.add_row("Performance Gain", str(tweak.performance_gain_estimate))
-    table.add_row("User Visible Impact", str(tweak.user_visible_change))
-    table.add_row("Rollback Method", tweak.rollback_method.get("type", "Automated inverse action").upper())
-    table.add_row("Required Elevation", "Administrator Required" if tweak.requires_admin else "Standard User")
-
-    console.print(table)
+    console.print(f"  [bold cyan]Tweak Name:[/bold cyan]        [bold white]{tweak.name}[/bold white]")
+    cat_val = tweak.category.value if hasattr(tweak.category, "value") else str(tweak.category)
+    console.print(f"  [bold cyan]Category:[/bold cyan]          [dim white]{cat_val}[/dim white]")
+    console.print(f"  [bold cyan]Description:[/bold cyan]       [bold white]{tweak.description}[/bold white]")
+    console.print(f"  [bold cyan]Risk Rating:[/bold cyan]       {format_risk_badge(tweak.risk_score)}")
+    console.print(f"  [bold cyan]Performance Gain:[/bold cyan]  {tweak.performance_gain_estimate}")
+    console.print(f"  [bold cyan]User Visible Impact:[/bold cyan]{tweak.user_visible_change}")
+    rollback_t = tweak.rollback_method.get("type", "Automated inverse action").upper()
+    console.print(f"  [bold cyan]Rollback Method:[/bold cyan]   [bold green]{rollback_t}[/bold green]")
+    elev_str = "Administrator Required" if tweak.requires_admin else "Standard User"
+    console.print(f"  [bold cyan]Elevation:[/bold cyan]         {elev_str}\n")
