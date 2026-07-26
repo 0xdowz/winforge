@@ -5,6 +5,14 @@ All notable changes to **WinForge** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2026-07-26
+
+### Added
+- **Complete CLI Layer Audit**: Verified clean separation of terminal presentation (`winforge/cli/`) from core optimization state machine, policy rules, and system mutation handlers.
+
+### Improved
+- **Open-Source Release Hygiene**: Validated 100% clean tracked file tree, verified PyTest unit test coverage (46/46 passed), and verified PyInstaller binary packaging pipeline.
+
 ## [1.0.3] - 2026-07-26
 
 ### Added
