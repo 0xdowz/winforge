@@ -12,7 +12,14 @@ from rich.rule import Rule
 
 from winforge.models.system import SystemHealthReport
 from winforge.models.tweak import Tweak
-from winforge.cli.formatting import format_status_badge, format_risk_badge
+from winforge.cli.formatting import (
+    format_status_badge,
+    format_risk_badge,
+    ICON_SUCCESS,
+    ICON_WARNING,
+    ICON_ERROR,
+    get_status_icon,
+)
 
 # Cap width to 90 columns for perfect rendering in CMD / PowerShell
 _term_width = min(shutil.get_terminal_size((80, 24)).columns, 90)
@@ -52,10 +59,10 @@ def render_health_dashboard(report: SystemHealthReport):
     maint = round(report.categories.maintenance_score, 1)
     start = round(report.categories.startup_score, 1)
 
-    p_icon = "[green]✓[/green]" if perf >= 80 else "[yellow]⚠[/yellow]"
-    s_icon = "[green]✓[/green]" if sec >= 80 else "[yellow]⚠[/yellow]"
-    m_icon = "[green]✓[/green]" if maint >= 80 else "[yellow]⚠[/yellow]"
-    st_icon = "[green]✓[/green]" if start >= 80 else "[yellow]⚠[/yellow]"
+    p_icon = get_status_icon("success" if perf >= 80 else "warning")
+    s_icon = get_status_icon("success" if sec >= 80 else "warning")
+    m_icon = get_status_icon("success" if maint >= 80 else "warning")
+    st_icon = get_status_icon("success" if start >= 80 else "warning")
 
     console.print(f"   {p_icon} Performance Score:          {perf} / 100")
     console.print(f"   {s_icon} Security & Privacy:         {sec} / 100")
@@ -98,11 +105,13 @@ def render_warnings(report: SystemHealthReport):
     _section_rule("Detected System Issues", "dim yellow")
 
     if not report.warnings:
-        console.print("  [bold green]✓ Zero critical system degradation issues detected.[/bold green]\n")
+        warn_icon = get_status_icon("success")
+        console.print(f"  {warn_icon} [bold green]Zero critical system degradation issues detected.[/bold green]\n")
         return
 
+    warn_icon = get_status_icon("warning")
     for warning in report.warnings:
-        console.print(f"  [bold yellow]⚠  {warning}[/bold yellow]")
+        console.print(f"  {warn_icon} [bold yellow]{warning}[/bold yellow]")
     console.print()
 
 
