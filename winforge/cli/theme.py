@@ -1,6 +1,6 @@
 """
-WinForge CLI Design System & Centralized Rendering Engine.
-Provides unified width caps, typography tokens, color palettes, section lifecycles, and RendererManager singleton.
+WinForge CLI Design System — Premium Cybersecurity Theme & Terminal Rendering Engine.
+Provides unified width caps, dark enterprise color tokens, typography tokens, section lifecycles, and RendererManager singleton.
 """
 
 import os
@@ -14,27 +14,27 @@ CONSOLE_WIDTH = min(shutil.get_terminal_size((80, 24)).columns, 90)
 
 
 class CLITheme:
-    """Design Tokens & Typography Hierarchy for WinForge CLI."""
+    """Enterprise Dark Cybersecurity Theme Tokens & Typography Hierarchy."""
 
-    PRIMARY = "bold cyan"
-    SUCCESS = "bold green"
-    WARNING = "bold yellow"
-    DANGER = "bold red"
-    INFO = "bold blue"
-    MUTED = "dim white"
-    BODY = "bold white"
+    PRIMARY = "bold cyan"      # Cyber Cyan
+    SUCCESS = "bold green"     # Matrix Green
+    WARNING = "bold yellow"    # Amber
+    DANGER = "bold red"        # Red
+    MUTED = "dim white"        # Slate Gray
+    BODY = "white"             # Body Text
 
     TITLE = "bold cyan"
     SECTION = "bold white"
     SUBTITLE = "bold yellow"
+    ERROR = "bold red"
 
 
 class RendererManager:
     """
     Centralized Terminal Rendering Engine:
       - Fixed console width auto-capped to 90 columns for perfect rendering across 80/90/120 col terminals.
-      - Safe output queue & section lifecycle: Before spacing -> Header -> Content -> After spacing.
-      - Eliminates rendering collisions, border corruption, and duplicate outputs.
+      - Safe output queue & section lifecycle: Before spacing (1 blank line) -> Header -> Content -> After spacing (1 blank line).
+      - Eliminates rendering collisions, border corruption, direct print statements, and duplicate outputs.
     """
 
     def __init__(self, override_width: Optional[int] = None):

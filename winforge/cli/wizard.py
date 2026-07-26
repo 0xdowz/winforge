@@ -17,42 +17,42 @@ class OptimizationWizard:
         """Displays guided optimization profile selection menu."""
         renderer.render_section("Guided Optimization Wizard", color="cyan")
 
-        console.print("  [bold white]Choose an Optimization Profile suitable for your system:[/bold white]\n")
+        console.print("  [bold white]Select your experience level:[/bold white]\n")
 
-        console.print("  [bold green]1. SAFE OPTIMIZATIONS (Beginner)[/bold green]")
-        console.print("     • Tweaks:   Temp Cleanup, Basic Power & Visual Adjustments")
-        console.print("     • Risk:     Very Low / Low")
-        console.print("     • Requires: None (Fully Automated & 100% Safe)\n")
+        console.print("  [bold green]1. Beginner Mode[/bold green]")
+        console.print('     • Description:        "I want my PC faster. I have no technical knowledge."')
+        console.print("     • Risk Tier:          Very Low / Low")
+        console.print("     • Required Knowledge: None (100% Automated & Safe)\n")
 
-        console.print("  [bold yellow]2. ADVANCED OPTIMIZATIONS[/bold yellow]")
-        console.print("     • Tweaks:   Network Latency, Service Hygiene & Cache Tuning")
-        console.print("     • Risk:     Medium")
-        console.print("     • Requires: Basic Windows System Knowledge\n")
+        console.print("  [bold yellow]2. Advanced Mode[/bold yellow]")
+        console.print('     • Description:        "I understand Windows settings."')
+        console.print("     • Risk Tier:          Medium")
+        console.print("     • Required Knowledge: Basic Windows Administration\n")
 
-        console.print("  [bold magenta]3. TECHNICIAN ONLY MODE[/bold magenta]")
-        console.print("     • Tweaks:   Registry Optimization, High-Risk System Parameters")
-        console.print("     • Risk:     High / Technician Tier")
-        console.print("     • Requires: Administrator & IT System Engineering Experience\n")
+        console.print("  [bold magenta]3. Technician Mode[/bold magenta]")
+        console.print('     • Description:        "I manage systems professionally."')
+        console.print("     • Risk Tier:          High / Technician Tier")
+        console.print("     • Required Knowledge: IT Engineering & Registry Experience\n")
 
         console.print("  [bold red]4. Cancel[/bold red]\n")
 
-        return Prompt.ask("Select profile [1-4]", choices=["1", "2", "3", "4"], default="1")
+        return Prompt.ask("Select mode [1-4]", choices=["1", "2", "3", "4"], default="1")
 
     def render_tweak_education_card(self, tweak: Tweak):
         """Renders comprehensive beginner education card for a tweak."""
-        renderer.render_section(f"Tweak Education :: {tweak.name}", color="cyan")
+        renderer.render_section(f"Optimization :: {tweak.name}", color="cyan")
 
         cat_val = tweak.category.value if hasattr(tweak.category, "value") else str(tweak.category)
-        rollback_str = "Automated Inverse Action Available" if tweak.rollback_method else "Manual Baseline Restore"
-        tech_level = "Beginner (Safe)" if tweak.risk_score <= 20 else ("Advanced" if tweak.risk_score <= 50 else "Technician Only")
+        rollback_str = "Available (Automated Rollback Ledger)" if tweak.rollback_method else "Manual Baseline Restore"
+        req_knowledge = "None (Beginner Safe)" if tweak.risk_score <= 20 else ("Basic Windows Settings" if tweak.risk_score <= 50 else "IT System Administrator")
 
-        console.print(f"  [bold cyan]Name:[/bold cyan]            [bold white]{tweak.name}[/bold white]")
-        console.print(f"  [bold cyan]Category:[/bold cyan]        [dim white]{cat_val}[/dim white]")
-        console.print(f"  [bold cyan]What It Does:[/bold cyan]    [bold white]{tweak.description}[/bold white]")
-        console.print(f"  [bold cyan]Expected Impact:[/bold cyan] {tweak.performance_gain_estimate} ({tweak.user_visible_change})")
-        console.print(f"  [bold cyan]Risk Rating:[/bold cyan]     {format_risk_badge(tweak.risk_score)}")
-        console.print(f"  [bold cyan]Rollback Method:[/bold cyan] [bold green]{rollback_str}[/bold green]")
-        console.print(f"  [bold cyan]Technical Level:[/bold cyan] [bold yellow]{tech_level}[/bold yellow]\n")
+        console.print(f"  [bold cyan]Name:[/bold cyan]              [bold white]{tweak.name}[/bold white]")
+        console.print(f"  [bold cyan]What it changes:[/bold cyan]   [bold white]{tweak.description}[/bold white]")
+        console.print(f"  [bold cyan]Why recommended:[/bold cyan]   [dim white]System health report identified optimization potential in {cat_val}[/dim white]")
+        console.print(f"  [bold cyan]Expected benefit:[/bold cyan]  [bold green]{tweak.performance_gain_estimate} ({tweak.user_visible_change})[/bold green]")
+        console.print(f"  [bold cyan]Risk Rating:[/bold cyan]       {format_risk_badge(tweak.risk_score)}")
+        console.print(f"  [bold cyan]Rollback:[/bold cyan]          [bold green]{rollback_str}[/bold green]")
+        console.print(f"  [bold cyan]Required knowledge:[/bold cyan][bold yellow] {req_knowledge}[/bold yellow]\n")
 
 
 wizard = OptimizationWizard()

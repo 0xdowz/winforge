@@ -22,6 +22,7 @@ from winforge.cli.components import (
 )
 from winforge.cli.interface import WinForgeCLI
 from winforge.licensing.policy import LicensePolicyManager
+from winforge.cli.theme import render_section_header
 
 logger = logging.getLogger("winforge")
 
@@ -101,25 +102,22 @@ def main():
         lic_mgr = LicensePolicyManager()
         val_res = lic_mgr.get_active_license()
 
-        print("\n==================================================")
-        print("    WINFORGE OPEN SOURCE ENVIRONMENT INFORMATION  ")
-        print("==================================================")
-        print(f" Software License:   Free & Open-Source (MIT)")
-        print(f" Creator & Author:   @{__author__}")
-        print(f" Environment State:  {val_res.state.value}")
-        print(f" Integrity State:    {'Validated' if valid_checksums else 'Modified Configuration Warning'}")
-        print(f" Capability Profile: {val_res.capabilities.tier.value}")
-        print(f" Status Message:     {val_res.message}")
-        print(f" Technician Mode:    {'Allowed' if val_res.capabilities.technician_mode_allowed else 'Restricted'}")
-        print(f" Max Risk Score:     {val_res.capabilities.max_risk_score_allowed}/100")
-        print("==================================================\n")
+        render_section_header("WINFORGE OPEN SOURCE ENVIRONMENT INFORMATION", "cyan")
+        console.print(f" Software License:   Free & Open-Source (MIT)")
+        console.print(f" Creator & Author:   @{__author__}")
+        console.print(f" Environment State:  {val_res.state.value}")
+        console.print(f" Integrity State:    {'Validated' if valid_checksums else 'Modified Configuration Warning'}")
+        console.print(f" Capability Profile: {val_res.capabilities.tier.value}")
+        console.print(f" Status Message:     {val_res.message}")
+        console.print(f" Technician Mode:    {'Allowed' if val_res.capabilities.technician_mode_allowed else 'Restricted'}")
+        console.print(f" Max Risk Score:     {val_res.capabilities.max_risk_score_allowed}/100\n")
         sys.exit(0)
 
     # Display integrity warnings for scan / dry-run / execute
     if not valid_checksums:
-        print("\n[CONFIG INTEGRITY WARNING]")
+        console.print("\n[bold yellow][CONFIG INTEGRITY WARNING][/bold yellow]")
         for w in integrity_warnings:
-            print(f" ! {w}")
+            console.print(f" ! {w}")
 
     # Subcommand 4: Scan / Analyze
     if is_scan:
@@ -128,12 +126,12 @@ def main():
         render_hardware_summary(report)
         render_warnings(report)
         filepath = export_system_report(report)
-        print(f"\n[SCAN COMPLETE] Diagnostic report generated: {filepath}")
+        console.print(f"\n[bold green][SCAN COMPLETE][/bold green] Diagnostic report generated: {filepath}")
         sys.exit(0)
 
     # Subcommand 5: Dry-Run Simulation
     if is_dry_run:
-        console.print("\n[DRY-RUN SIMULATION MODE]")
+        console.print("\n[bold yellow][DRY-RUN SIMULATION MODE][/bold yellow]")
         session_mgr, report, _, sim_res = run_session_pipeline(dry_run=True, run_benchmarks=False)
         render_health_dashboard(report)
         render_dry_run_summary(session_mgr, report, sim_res)
@@ -151,7 +149,7 @@ def main():
     if is_safe_profile or is_adv_profile:
         app = WinForgeCLI(tech_mode=is_tech, dry_run=not is_execute, mock_execution=not is_execute)
         max_risk = 20 if is_safe_profile else 50
-        profile_name = "Safe / Beginner" if is_safe_profile else "Advanced"
+        profile_name = "Safe / Beginner Mode" if is_safe_profile else "Advanced Mode"
         app.run_profile_optimization(max_risk=max_risk, profile_name=profile_name)
         sys.exit(0)
 
@@ -159,23 +157,23 @@ def main():
     if is_execute:
         admin_ok = require_admin()
         if not admin_ok:
-            print("\n[CRITICAL ERROR] Production execution requires Administrator privileges.")
+            console.print("\n[bold red][CRITICAL ERROR] Production execution requires Administrator privileges.[/bold red]")
             sys.exit(1)
 
         if not valid_checksums:
-            print("\n[SECURITY AUDIT] Modified or unverified tweak configuration files detected.")
+            console.print("\n[bold yellow][SECURITY AUDIT] Modified or unverified tweak configuration files detected.[/bold yellow]")
             if not Confirm.ask("Do you want to proceed with execution despite checksum warnings?", default=False):
-                print("[ABORTED] Production execution cancelled by user.")
+                console.print("[bold red][ABORTED] Production execution cancelled by user.[/bold red]")
                 sys.exit(1)
 
-        print("\n[PRODUCTION EXECUTION MODE]")
+        console.print("\n[bold red][PRODUCTION EXECUTION MODE][/bold red]")
         app = WinForgeCLI(tech_mode=is_tech, dry_run=False, mock_execution=False)
         app.run()
         sys.exit(0)
 
-    # Default Interactive Menu CLI
+    # Default Interactive Launch -> Run Welcome Journey
     app = WinForgeCLI(tech_mode=is_tech, dry_run=True, mock_execution=True)
-    app.run()
+    app.handle_welcome()
 
 
 if __name__ == "__main__":

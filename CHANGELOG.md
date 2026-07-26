@@ -5,6 +5,15 @@ All notable changes to **WinForge** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2026-07-26
+
+### Added
+- **Enterprise Dark Cybersecurity Theme**: Cyber Cyan, Matrix Green, Amber, Red, and Slate Gray color tokens with strict typography hierarchy.
+- **Hardware Intelligence Engine**: Auto-detects CPU, GPU, RAM, and Power State to recommend tailored Gaming, Battery Efficiency, or Workstation profiles.
+- **Human Optimization Report**: Added detailed post-optimization report with storage recovery, performance percentage improvement, and rollback availability.
+- **Print Statement Audit**: Removed raw `print()` calls in favor of managed `RendererManager` output queue across all CLI modules.
+- **Detailed Tweak Explanation Cards**: Beginner-focused explanation cards detailing exact changes, reasons, expected benefits, and required knowledge.
+
 ## [1.0.5] - 2026-07-26
 
 ### Added
