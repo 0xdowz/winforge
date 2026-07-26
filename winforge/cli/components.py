@@ -1,7 +1,7 @@
 """
-WinForge CLI Components — Rich terminal rendering library.
-Handles all visual output: dashboards, tables, inspection cards, and benchmark panels.
-Uses responsive width detection to avoid terminal overflow on all terminal sizes.
+WinForge CLI Components — Modern Terminal Presentation Library.
+Provides clean visual hierarchy, section dividers, status badges, and hardware tables.
+Uses responsive width detection to adapt gracefully to all terminal windows.
 """
 
 import shutil
@@ -9,73 +9,65 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich.text import Text
-from rich.columns import Columns
 from rich.rule import Rule
 
 from winforge.models.system import SystemHealthReport
 from winforge.models.tweak import Tweak
+from winforge.cli.formatting import format_status_badge, format_risk_badge
 
 # Single shared console with terminal-aware width
 _term_width = min(shutil.get_terminal_size((120, 32)).columns, 160)
 console = Console(width=_term_width)
 
-# Column widths that degrade gracefully at narrow terminals
 _NARROW = _term_width < 100
 _COMPONENT_COL = 18 if _NARROW else 24
-_SPEC_COL_FIXED = 40 if _NARROW else None   # None = auto-expand
+_SPEC_COL_FIXED = 40 if _NARROW else None
 
 
-def _section_rule(label: str, style: str = "cyan"):
-    """Prints a visual section separator rule."""
-    console.print(Rule(f"[bold {style}]{label}[/bold {style}]", style=style))
+def _section_rule(label: str, style: str = "dim cyan"):
+    """Prints a clean visual section separator rule."""
+    console.print()
+    console.print(Rule(f"[bold white]{label}[/bold white]", style=style))
+    console.print()
 
 
 def render_health_dashboard(report: SystemHealthReport):
-    """Renders high-level System Health Scorecard dashboard."""
+    """Renders clean, structured System Health Overview."""
     score = round(report.health_score, 1)
 
     if score >= 85:
-        score_color = "bold green"
-        badge = "OPTIMAL STATE"
+        score_style = "bold green"
+        badge_text = "OPTIMAL STATE"
     elif score >= 70:
-        score_color = "bold yellow"
-        badge = "NEEDS TUNING"
+        score_style = "bold yellow"
+        badge_text = "NEEDS ATTENTION"
     else:
-        score_color = "bold red"
-        badge = "CRITICAL DEGRADATION"
+        score_style = "bold red"
+        badge_text = "CRITICAL DEGRADATION"
 
-    total_blocks = 20
-    filled_blocks = int((score / 100.0) * total_blocks)
-    bar_str = "=" * filled_blocks + "." * (total_blocks - filled_blocks)
+    _section_rule("System Health Overview", "dim cyan")
 
-    dashboard_text = Text()
-    dashboard_text.append(f"  WINFORGE HEALTH SCORE: ", style="bold white")
-    dashboard_text.append(f"{score}/100 ", style=score_color)
-    dashboard_text.append(f"[{badge}]\n", style=score_color)
-    dashboard_text.append(f"  HEALTH INDEX: ", style="bold white")
-    dashboard_text.append(f"[{bar_str}] {score}%\n\n", style=score_color)
+    score_text = Text()
+    score_text.append("  Health Score:  ", style="bold white")
+    score_text.append(f"{score} / 100", style=score_style)
+    score_text.append(f"  [{badge_text}]\n\n", style=score_style)
 
-    dashboard_text.append("  CATEGORY BREAKDOWN:\n", style="bold cyan")
-    dashboard_text.append(f"  * Performance Score:           {round(report.categories.performance_score, 1)}/100\n", style="bold white")
-    dashboard_text.append(f"  * Security & Privacy Score:    {round(report.categories.security_score, 1)}/100\n", style="bold white")
-    dashboard_text.append(f"  * Maintenance & Cleanliness:  {round(report.categories.maintenance_score, 1)}/100\n", style="bold white")
-    dashboard_text.append(f"  * Startup & Service Hygiene:   {round(report.categories.startup_score, 1)}/100\n", style="bold white")
+    score_text.append("  Category Breakdown:\n", style="bold cyan")
+    score_text.append(f"   • Performance Score:          {round(report.categories.performance_score, 1)} / 100\n", style="bold white")
+    score_text.append(f"   • Security & Privacy:         {round(report.categories.security_score, 1)} / 100\n", style="bold white")
+    score_text.append(f"   • Maintenance & Cleanliness: {round(report.categories.maintenance_score, 1)} / 100\n", style="bold white")
+    score_text.append(f"   • Startup & Service Hygiene:  {round(report.categories.startup_score, 1)} / 100\n", style="bold white")
 
-    panel = Panel(
-        dashboard_text,
-        title="[bold yellow]WINFORGE :: SYSTEM HEALTH DASHBOARD[/bold yellow]",
-        border_style="cyan"
-    )
-    console.print()
-    console.print(panel)
+    console.print(score_text)
 
 
 def render_hardware_summary(report: SystemHealthReport):
-    """Renders hardware specification table with responsive column sizing."""
+    """Renders hardware specification table with sleek layout."""
+    _section_rule("Hardware Specification", "dim cyan")
+
     table = Table(
-        title="DIAGNOSTIC HARDWARE SPECIFICATION",
         header_style="bold yellow",
-        border_style="blue",
+        border_style="dim cyan",
         expand=False,
         show_lines=False,
     )
@@ -96,32 +88,29 @@ def render_hardware_summary(report: SystemHealthReport):
     table.add_row("Storage Drives", storage_str)
     table.add_row("Active Power Plan", f"{report.power.active_name} ({'On Battery' if report.power.is_on_battery else 'AC Power'})")
 
-    console.print()
     console.print(table)
 
 
 def render_warnings(report: SystemHealthReport):
-    """Renders detected system degradation warnings panel."""
+    """Renders concise system degradation warnings list."""
+    _section_rule("Detected System Issues", "dim yellow")
+
     if not report.warnings:
-        console.print("\n[bold green]  ✓ Zero critical system degradation issues detected.[/bold green]")
+        console.print("  [bold green]✓ Zero critical system degradation issues detected.[/bold green]\n")
         return
 
-    text = Text()
     for warning in report.warnings:
-        text.append(f"  ⚠  {warning}\n", style="bold yellow")
-
-    panel = Panel(text, title="[bold yellow]DETECTED SYSTEM DEGRADATION WARNINGS[/bold yellow]", border_style="yellow")
+        console.print(f"  [bold yellow]⚠  {warning}[/bold yellow]")
     console.print()
-    console.print(panel)
 
 
 def render_benchmark_results(bench):
-    """Renders quantitative performance benchmark results table."""
-    _section_rule("WINFORGE :: PERFORMANCE BENCHMARK SUITE", "cyan")
+    """Renders quantitative performance benchmark table."""
+    _section_rule("Performance Benchmark Results", "dim cyan")
 
     table = Table(
         header_style="bold yellow",
-        border_style="blue",
+        border_style="dim cyan",
         show_lines=True,
         expand=False,
     )
@@ -135,21 +124,13 @@ def render_benchmark_results(bench):
     table.add_row("Timer Resolution",              f"{bench.timer_resolution_ms}",    "ms")
     table.add_row("DNS Resolution Latency",        f"{bench.dns_latency_ms}",         "ms")
 
-    console.print()
     console.print(table)
-    console.print()
 
 
 def render_dry_run_summary(session_mgr, report, sim_res):
-    """
-    Renders a structured Dry-Run simulation summary panel.
-    Presents baseline vs simulated scores, improvement delta, and report paths.
-    """
-    console.print()
-    _section_rule("WINFORGE :: DRY-RUN SIMULATION COMPLETE", "green")
-    console.print()
+    """Renders structured Dry-Run simulation summary."""
+    _section_rule("Dry-Run Simulation Complete", "dim green")
 
-    # Score summary
     if sim_res:
         baseline = sim_res.get("baseline_health_score", round(report.health_score, 1))
         projected = sim_res.get("simulated_health_score", baseline)
@@ -163,14 +144,11 @@ def render_dry_run_summary(session_mgr, report, sim_res):
         score_text.append("  Score Improvement:   ", style="bold white")
         score_text.append(f"+{delta} points\n", style="bold cyan")
 
-        console.print(Panel(score_text, title="[bold yellow]SCORE PROJECTION[/bold yellow]", border_style="green"))
+        console.print(Panel(score_text, title="[bold yellow]Score Projection[/bold yellow]", border_style="green"))
         console.print()
 
-    # Warnings
     render_warnings(report)
-    console.print()
 
-    # Report paths
     path_text = Text()
     path_text.append("  Session ID:       ", style="bold white")
     path_text.append(f"{session_mgr.session_id}\n", style="bold cyan")
@@ -179,16 +157,17 @@ def render_dry_run_summary(session_mgr, report, sim_res):
     path_text.append("  HTML Report:      ", style="bold white")
     path_text.append(f"{session_mgr.get_report_html_path()}\n", style="bold green")
 
-    console.print(Panel(path_text, title="[bold yellow]SESSION REPORT GENERATED[/bold yellow]", border_style="cyan"))
+    console.print(Panel(path_text, title="[bold yellow]Session Report Generated[/bold yellow]", border_style="cyan"))
     console.print()
 
 
 def render_tweak_inspection_card(tweak: Tweak):
-    """Renders detailed Technician Mode Tweak Inspection Card."""
+    """Renders granular Technician Mode Tweak Inspection Card."""
+    _section_rule(f"Tweak Inspection Card :: {tweak.id}", "dim magenta")
+
     table = Table(
-        title=f"TWEAK INSPECTION CARD :: [{tweak.id}]",
         header_style="bold yellow",
-        border_style="magenta",
+        border_style="dim magenta",
         show_lines=False,
         expand=False,
     )
@@ -198,22 +177,10 @@ def render_tweak_inspection_card(tweak: Tweak):
     table.add_row("Tweak Name", tweak.name)
     table.add_row("Category", tweak.category.value if hasattr(tweak.category, "value") else str(tweak.category))
     table.add_row("Description", tweak.description)
-
-    score = tweak.risk_score
-    if score <= 20:
-        risk_str = f"[bold green]{score}/100 (SAFE)[/bold green]"
-    elif score <= 50:
-        risk_str = f"[bold yellow]{score}/100 (MODERATE)[/bold yellow]"
-    elif score <= 80:
-        risk_str = f"[bold red]{score}/100 (ADVANCED)[/bold red]"
-    else:
-        risk_str = f"[bold magenta]{score}/100 (TECHNICIAN ONLY)[/bold magenta]"
-
-    table.add_row("Risk Rating", risk_str)
+    table.add_row("Risk Rating", format_risk_badge(tweak.risk_score))
     table.add_row("Performance Gain", str(tweak.performance_gain_estimate))
     table.add_row("User Visible Impact", str(tweak.user_visible_change))
     table.add_row("Rollback Method", tweak.rollback_method.get("type", "Automated inverse action").upper())
     table.add_row("Required Elevation", "Administrator Required" if tweak.requires_admin else "Standard User")
 
-    console.print()
     console.print(table)

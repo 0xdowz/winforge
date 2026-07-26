@@ -28,23 +28,32 @@ class WinForgeCLI:
         self.executor = OptimizationExecutor()
 
     def display_menu(self):
-        """Displays main navigation menu."""
-        console.print("\n[bold cyan]─── MAIN NAVIGATION MENU ───[/bold cyan]")
-        console.print("  [bold yellow]1.[/bold yellow] Full Diagnostic System Scan")
-        console.print("  [bold yellow]2.[/bold yellow] Quantitative System Benchmark Suite")
-        console.print("  [bold yellow]3.[/bold yellow] Dry-Run Optimization Simulation")
-        console.print("  [bold yellow]4.[/bold yellow] Apply Recommended Optimizations")
-        console.print("  [bold yellow]5.[/bold yellow] Safe Disk Cleanup Routine")
-        console.print("  [bold yellow]6.[/bold yellow] Startup & Service Hygiene Manager")
-        console.print("  [bold yellow]7.[/bold yellow] Generate Reports (HTML & JSON)")
-        console.print("  [bold yellow]8.[/bold yellow] System Rollback & Restoration")
+        """Displays main navigation menu grouped by category."""
+        console.print("[bold cyan]MAIN MENU[/bold cyan]\n")
 
+        console.print("[bold white]Diagnostics[/bold white]")
+        console.print("  [bold yellow]1[/bold yellow]  Scan system health")
+        console.print("  [bold yellow]2[/bold yellow]  Run performance benchmarks\n")
+
+        console.print("[bold white]Optimization[/bold white]")
+        console.print("  [bold yellow]3[/bold yellow]  Preview dry-run simulation")
+        console.print("  [bold yellow]4[/bold yellow]  Apply recommended optimizations\n")
+
+        console.print("[bold white]Maintenance[/bold white]")
+        console.print("  [bold yellow]5[/bold yellow]  Safe disk cleanup routine")
+        console.print("  [bold yellow]6[/bold yellow]  Startup & service hygiene\n")
+
+        console.print("[bold white]Reports & Recovery[/bold white]")
+        console.print("  [bold yellow]7[/bold yellow]  Export diagnostic reports")
+        console.print("  [bold yellow]8[/bold yellow]  Restore system & rollback\n")
+
+        console.print("[bold white]Settings[/bold white]")
         if self.tech_mode:
-            console.print("  [bold magenta]9.[/bold magenta] Technician Inspection Mode (Active)")
+            console.print("  [bold magenta]9[/bold magenta]  Technician mode [Active]")
         else:
-            console.print("  [bold green]9.[/bold green] Switch to Technician Mode")
+            console.print("  [bold green]9[/bold green]  Switch to technician mode")
 
-        console.print("  [bold red]0.[/bold red] Exit WinForge\n")
+        console.print("  [bold red]0[/bold red]  Exit WinForge\n")
 
     def run(self):
         """Main application interactive loop."""

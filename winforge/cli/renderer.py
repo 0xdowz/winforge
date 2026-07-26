@@ -1,5 +1,5 @@
 """
-WinForge CLI Renderer — Rich Terminal Presentation Layer.
+WinForge CLI Renderer — Modern Terminal Presentation Layer.
 Provides structured, testable visual rendering for Optimization Plans, Safety Locks, and Actionable Error Guidance.
 """
 
@@ -11,61 +11,44 @@ from rich.text import Text
 from rich.rule import Rule
 
 from winforge.models.tweak import Tweak, RiskCategory
-from winforge.cli.components import console
+from winforge.cli.components import console, format_risk_badge
 
 
 def render_optimization_plan(candidate_tweaks: List[Tweak], is_tech_mode: bool = False):
     """Renders structured pre-execution Optimization Plan table."""
+    console.print()
+    console.print(Rule("[bold white]Pre-Execution Optimization Plan[/bold white]", style="dim cyan"))
+    console.print()
+
     table = Table(
-        title="WINFORGE :: PRE-EXECUTION OPTIMIZATION PLAN",
         header_style="bold yellow",
-        border_style="cyan",
+        border_style="dim cyan",
         show_lines=True,
         expand=False
     )
     table.add_column("Tweak ID", style="bold cyan", width=16)
     table.add_column("Optimization Name", style="bold white", width=28)
     table.add_column("Category", style="dim white", width=14)
-    table.add_column("Risk Score", style="bold white", justify="center", width=14)
+    table.add_column("Risk Score", style="bold white", justify="center", width=18)
     table.add_column("Rollback Support", style="bold green", justify="center", width=16)
 
     for tweak in candidate_tweaks:
-        score = tweak.risk_score
-        if score <= 20:
-            risk_str = f"[bold green]{score} (SAFE)[/bold green]"
-        elif score <= 50:
-            risk_str = f"[bold yellow]{score} (MODERATE)[/bold yellow]"
-        elif score <= 80:
-            risk_str = f"[bold red]{score} (ADVANCED)[/bold red]"
-        else:
-            risk_str = f"[bold magenta]{score} (TECH ONLY)[/bold magenta]"
-
         cat_str = tweak.category.value if hasattr(tweak.category, "value") else str(tweak.category)
-        table.add_row(tweak.id, tweak.name, cat_str, risk_str, "✓ Automated")
+        table.add_row(tweak.id, tweak.name, cat_str, format_risk_badge(tweak.risk_score), "✓ Automated")
 
-    console.print()
     console.print(table)
     console.print()
 
 
 def render_safety_lock_status(restore_point_ready: bool = True, registry_backup_ready: bool = True, snapshot_ready: bool = True):
-    """Renders 4-Layer Safety Lock verification panel before mutation execution."""
-    text = Text()
-    text.append("  1. WMI System Restore Point:     ", style="bold white")
-    text.append("✓ CREATED\n" if restore_point_ready else "⚠ SKIPPED (MOCK)\n", style="bold green" if restore_point_ready else "bold yellow")
-    
-    text.append("  2. Atomic Registry Export:       ", style="bold white")
-    text.append("✓ CREATED\n" if registry_backup_ready else "⚠ SKIPPED (MOCK)\n", style="bold green" if registry_backup_ready else "bold yellow")
-
-    text.append("  3. System Pre-State Snapshot:   ", style="bold white")
-    text.append("✓ RECORDED\n" if snapshot_ready else "⚠ SKIPPED\n", style="bold green" if snapshot_ready else "bold yellow")
-
-    text.append("  4. Transaction Ledger (.json):   ", style="bold white")
-    text.append("✓ LOGGED\n", style="bold green")
-
-    panel = Panel(text, title="[bold yellow]4-LAYER SAFETY LOCK PRE-REQUISITES[/bold yellow]", border_style="green")
-    console.print(panel)
+    """Renders 4-Layer Safety Lock verification status."""
+    console.print(Rule("[bold white]4-Layer Safety Lock Verification[/bold white]", style="dim green"))
     console.print()
+
+    console.print("  [bold white]1. WMI System Restore Point:[/bold white]     " + (" [bold green]✓ CREATED[/bold green]" if restore_point_ready else " [bold yellow]⚠ SKIPPED (SIMULATION)[/bold yellow]"))
+    console.print("  [bold white]2. Atomic Registry Export:[/bold white]       " + (" [bold green]✓ CREATED[/bold green]" if registry_backup_ready else " [bold yellow]⚠ SKIPPED (SIMULATION)[/bold yellow]"))
+    console.print("  [bold white]3. System Pre-State Snapshot:[/bold white]   " + (" [bold green]✓ RECORDED[/bold green]" if snapshot_ready else " [bold yellow]⚠ SKIPPED[/bold yellow]"))
+    console.print("  [bold white]4. Transaction Ledger (.json):[/bold white]   " + " [bold green]✓ LOGGED[/bold green]\n")
 
 
 def render_actionable_error(title: str, reason: str, suggested_action: str):
@@ -87,11 +70,14 @@ def render_actionable_error(title: str, reason: str, suggested_action: str):
 
 
 def render_doctor_report(is_admin: bool, os_product: str, cpu_name: str, ram_gb: float, safety_ok: bool = True):
-    """Renders Phase 8 System Health & Environment Doctor Diagnostic Report."""
+    """Renders System Health & Environment Doctor Diagnostic Report."""
+    console.print()
+    console.print(Rule("[bold white]Environment & Safety Doctor Report[/bold white]", style="dim cyan"))
+    console.print()
+
     table = Table(
-        title="WINFORGE DOCTOR :: ENVIRONMENT & SAFETY DIAGNOSTIC REPORT",
         header_style="bold yellow",
-        border_style="cyan",
+        border_style="dim cyan",
         show_lines=True,
         expand=False
     )
@@ -105,6 +91,5 @@ def render_doctor_report(is_admin: bool, os_product: str, cpu_name: str, ram_gb:
     table.add_row("System Memory (RAM)", "✓ Operational", f"{ram_gb} GB Installed")
     table.add_row("4-Layer Safety Engine", "✓ Operational" if safety_ok else "⚠ Degraded", "Restore points & atomic registry backup ready")
 
-    console.print()
     console.print(table)
     console.print()
