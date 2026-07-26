@@ -1,7 +1,6 @@
 """
-WinForge :: Free Open-Source Windows System Optimization CLI Framework
-Developed and Maintained by @0xdowz
+WinForge System Optimization Package.
 """
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 __author__ = "0xdowz"

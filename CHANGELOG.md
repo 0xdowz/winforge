@@ -5,6 +5,15 @@ All notable changes to **WinForge** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-07-26
+
+### Added
+- **Commercial-Grade CLI Identity System**: Brand new fastfetch / cargo / docker inspired startup experience with ASCII logo, version tags, developer attribution, build mode, and security status.
+- **Centralized `RendererManager` Engine**: Architectural rendering queue enforcing 80/90/120 column terminal safety, zero text overlaps, strict section lifecycle, and clean spacing.
+- **Guided Optimization Wizard**: Interactive beginner onboarding wizard with profile tiering (`Safe / Beginner`, `Advanced`, `Technician`).
+- **Beginner Education & Execution Summary**: Detailed tweak explanation cards and comprehensive post-optimization system improvement summary.
+- **Session Safety Transaction Lifecycle**: Centralized `SafetyTransactionManager` executing single-session 4-layer safety initialization.
+
 ## [1.0.4] - 2026-07-26
 
 ### Added

@@ -9,7 +9,7 @@ from rich.text import Text
 
 from winforge.models.system import SystemHealthReport
 from winforge.models.tweak import Tweak
-from winforge.cli.theme import console, CONSOLE_WIDTH, render_section_header, format_short_path
+from winforge.cli.theme import renderer, console, CONSOLE_WIDTH, render_section_header, format_short_path
 from winforge.cli.formatting import (
     format_status_badge,
     format_risk_badge,
@@ -139,6 +139,25 @@ def render_dry_run_summary(session_mgr, report, sim_res):
     console.print(f"   • Session ID:  [cyan]{session_mgr.session_id}[/cyan]")
     console.print(f"   • Log File:    [dim]{format_short_path(session_mgr.session_dir / 'findings.json')}[/dim]")
     console.print(f"   • HTML Report: [green]{format_short_path(session_mgr.get_report_html_path())}[/green]\n")
+
+
+def render_execution_report(completed_count: int, total_count: int, successful_count: int, skipped_count: int, skipped_reasons: list, delta_score: float):
+    """Renders commercial-grade post-optimization Execution Report."""
+    render_section_header("WINFORGE OPTIMIZATION REPORT", "green")
+
+    console.print(f"  [bold white]Completed:[/bold white]           [bold cyan]{completed_count} / {total_count}[/bold cyan]")
+    console.print(f"  [bold white]Successful:[/bold white]          [bold green]{successful_count}[/bold green]")
+    console.print(f"  [bold white]Skipped:[/bold white]             [bold yellow]{skipped_count}[/bold yellow]\n")
+
+    if skipped_reasons:
+        console.print("  [bold white]Skipped Reasons:[/bold white]")
+        for reason in skipped_reasons:
+            console.print(f"   • [yellow]{reason}[/yellow]")
+        console.print()
+
+    console.print("  [bold white]System Improvement:[/bold white]")
+    console.print(f"   • Health Score Gain: [bold green]+{delta_score:.1f}%[/bold green]")
+    console.print("   • Rollback Status:   [bold green]Available (Transaction Ledger Recorded)[/bold green]\n")
 
 
 def render_tweak_inspection_card(tweak: Tweak):

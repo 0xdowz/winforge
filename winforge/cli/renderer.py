@@ -4,11 +4,10 @@ Provides structured visual rendering for Optimization Plans, Safety Locks, Docto
 """
 
 from typing import List, Optional
-from rich.panel import Panel
 from rich.text import Text
 
 from winforge.models.tweak import Tweak, RiskCategory
-from winforge.cli.theme import console, render_section_header
+from winforge.cli.theme import renderer, console, render_section_header
 from winforge.cli.formatting import format_risk_badge, get_status_icon, ICON_SUCCESS, ICON_WARNING, ICON_ERROR
 
 
@@ -46,23 +45,17 @@ def render_safety_lock_status(restore_point_ready: bool = True, registry_backup_
 
 
 def render_actionable_error(title: str, reason: str, suggested_action: str):
-    """Renders structured, clear 3-part actionable error panel."""
-    text = Text()
-    text.append("What Happened:\n", style="bold white")
-    text.append(f"  {title}\n\n", style="bold red")
-    text.append("Why It Happened:\n", style="bold white")
-    text.append(f"  {reason}\n\n", style="bold yellow")
-    text.append("Suggested Solution:\n", style="bold white")
-    text.append(f"  {suggested_action}\n", style="bold green")
+    """Renders concise 3-part Action Blocked error header without oversized panels."""
+    render_section_header("Action Blocked / Execution Error", "red")
 
-    panel = Panel(
-        text,
-        title="[bold red]✗ Action Blocked or Execution Error[/bold red]",
-        border_style="red"
-    )
-    console.print()
-    console.print(panel)
-    console.print()
+    console.print("  [bold white]Problem:[/bold white]")
+    console.print(f"   [bold red]{title}[/bold red]\n")
+
+    console.print("  [bold white]Why It Happened:[/bold white]")
+    console.print(f"   [bold yellow]{reason}[/bold yellow]\n")
+
+    console.print("  [bold white]Suggested Solution:[/bold white]")
+    console.print(f"   [bold green]{suggested_action}[/bold green]\n")
 
 
 def render_doctor_report(is_admin: bool, os_product: str, cpu_name: str, ram_gb: float, safety_ok: bool = True):
