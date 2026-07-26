@@ -18,12 +18,13 @@ def test_registry_handler_mock():
 
 def test_service_handler_mock():
     svc = ServiceHandler()
-    # Query status
-    q_ok, q_info = svc.get_service_status("DiagTrack")
+    # Query status for RpcSs (available on all Windows Server and Desktop platforms)
+    q_ok, q_info = svc.get_service_status("RpcSs")
     assert q_ok is True
+    assert q_info.get("name", "").lower() == "rpcss"
 
     # Config start type (mock=True)
-    s_ok, s_msg = svc.set_service_start_type("DiagTrack", "demand", mock=True)
+    s_ok, s_msg = svc.set_service_start_type("RpcSs", "demand", mock=True)
     assert s_ok is True
     assert "[MOCK SERVICE]" in s_msg
 
