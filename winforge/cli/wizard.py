@@ -54,5 +54,11 @@ class OptimizationWizard:
         console.print(f"  [bold cyan]Rollback:[/bold cyan]          [bold green]{rollback_str}[/bold green]")
         console.print(f"  [bold cyan]Required knowledge:[/bold cyan][bold yellow] {req_knowledge}[/bold yellow]\n")
 
+    def prompt_explain_action(self) -> str:
+        """Prompts user prior to system mutations with Explain Before Execute options."""
+        console.print("  [bold white]Execution Actions:[/bold white]")
+        console.print("   [bold green][Y] Apply optimizations[/bold green]   [bold red][N] Cancel execution[/bold red]   [bold cyan][D] Detailed view[/bold cyan]\n")
+        return Prompt.ask("Select action [Y/N/D]", choices=["Y", "N", "D", "y", "n", "d"], default="Y").upper()
+
 
 wizard = OptimizationWizard()

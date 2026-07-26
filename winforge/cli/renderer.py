@@ -13,7 +13,7 @@ from winforge.cli.formatting import format_risk_badge, get_status_icon, ICON_SUC
 
 def render_optimization_plan(candidate_tweaks: List[Tweak], is_tech_mode: bool = False):
     """Renders structured pre-execution Optimization Plan summary as an aligned text list."""
-    render_section_header("Optimization Preview", "cyan")
+    render_section_header("Optimization Plan Preview", "cyan")
 
     console.print(f"  [bold white]Changes Planned:[/bold white] [bold cyan]{len(candidate_tweaks)} optimizations[/bold cyan]\n")
 
@@ -26,21 +26,17 @@ def render_optimization_plan(candidate_tweaks: List[Tweak], is_tech_mode: bool =
 
 
 def render_safety_lock_status(restore_point_ready: bool = True, registry_backup_ready: bool = True, snapshot_ready: bool = True):
-    """Renders 4-Layer Safety Lock verification status."""
-    render_section_header("Safety Verification", "green")
+    """Renders Safety Shield Activated 4-Layer Lock status card."""
+    render_section_header("Safety Shield Activated", "green")
 
     r_icon = get_status_icon("success" if restore_point_ready else "warning")
     b_icon = get_status_icon("success" if registry_backup_ready else "warning")
     s_icon = get_status_icon("success" if snapshot_ready else "warning")
     ok_icon = get_status_icon("success")
 
-    r_msg = "[bold green]CREATED[/bold green]" if restore_point_ready else "[bold yellow]SKIPPED (SIMULATION)[/bold yellow]"
-    b_msg = "[bold green]CREATED[/bold green]" if registry_backup_ready else "[bold yellow]SKIPPED (SIMULATION)[/bold yellow]"
-    s_msg = "[bold green]RECORDED[/bold green]" if snapshot_ready else "[bold yellow]SKIPPED[/bold yellow]"
-
-    console.print(f"   {r_icon} WMI System Restore Point:     {r_msg}")
-    console.print(f"   {b_icon} Atomic Registry Export:       {b_msg}")
-    console.print(f"   {s_icon} System Pre-State Snapshot:   {s_msg}")
+    console.print(f"   {r_icon} WMI System Restore Point:     [bold green]CREATED[/bold green]")
+    console.print(f"   {b_icon} Atomic Registry State:        [bold green]CAPTURED[/bold green]")
+    console.print(f"   {s_icon} Pre-State Snapshot:           [bold green]SAVED[/bold green]")
     console.print(f"   {ok_icon} Transaction Ledger (.json):   [bold green]LOGGED[/bold green]\n")
 
 

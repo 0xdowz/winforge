@@ -10,6 +10,7 @@ from winforge.cli.progress import StepTracker
 from winforge.models.tweak import Tweak, TweakCategory, RiskLevel, RiskCategory
 from winforge.models.system import SystemHealthReport, CPUInfo, RAMInfo, GPUInfo, PowerPlan, OSInfo, CategoryScores
 from winforge.analyzers.hardware_profile import hardware_engine
+from winforge.security.health import security_engine
 from winforge.safety.transaction import SafetyTransactionManager
 
 
@@ -67,7 +68,7 @@ def test_wizard_and_education_cards():
     wiz.render_tweak_education_card(tweak)
 
 
-def test_hardware_intelligence_engine():
+def test_hardware_intelligence_engine_v2():
     report = SystemHealthReport(
         timestamp="2026-07-26T18:00:00",
         os=OSInfo(product_name="Windows 11 Pro"),
@@ -84,7 +85,16 @@ def test_hardware_intelligence_engine():
     )
     res = hardware_engine.analyze_hardware_profile(report)
     assert res["recommended_profile"] == "Gaming Performance Profile"
-    assert res["has_discrete_gpu"] is True
+    assert res["confidence_percent"] == 92
+    assert len(res["reasons"]) > 0
+    assert "Dedicated GPU detected" in res["reasons"][0]
+
+
+def test_security_health_engine():
+    res = security_engine.audit_security_health()
+    assert "security_score" in res
+    assert res["security_score"] >= 0.0
+    assert len(res["checks"]) >= 4
 
 
 def test_cli_width_safety_limits(tmp_path):

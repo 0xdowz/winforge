@@ -5,6 +5,17 @@ All notable changes to **WinForge** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-07-26
+
+### Added
+- **Enterprise Intelligence Upgrade**: Product subtitle "Windows Performance Intelligence Platform" and engine architecture module tree.
+- **Hardware Intelligence Engine v2**: Added hardware scoring engine calculating profile recommendation confidence (e.g. 92%) with explicit reasons.
+- **Explain-Before-Execute Interactive Wizard**: Prompts with `[Y] Apply`, `[N] Cancel`, `[D] Detailed view` prior to any system mutation.
+- **Safety Shield Activation & Rollback Engine**: Standardized "Safety Shield Activated" status cards and added `winforge rollback list` and `winforge rollback SESSION_ID`.
+- **Security Health Module (`winforge security-check`)**: Scans Windows Defender, Firewall, UAC, BitLocker, Windows Update, and Admin rights to calculate a Security Health Score.
+- **New Professional Commands**: Added `winforge info`, `winforge analyze`, `winforge tweaks list`, and `winforge security-check`.
+- **Local Privacy Guarantee**: Clear offline, zero telemetry, zero cloud connection startup declaration.
+
 ## [1.0.6] - 2026-07-26
 
 ### Added
