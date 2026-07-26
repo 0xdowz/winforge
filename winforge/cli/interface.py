@@ -3,12 +3,12 @@ import logging
 from typing import Optional, List
 from rich.prompt import Prompt, Confirm
 
-from winforge.cli.banner import render_banner
+from winforge.cli.banner import render_banner, render_welcome_banner
 from winforge.cli.components import (
     render_health_dashboard, render_hardware_summary, render_warnings,
     render_tweak_inspection_card, render_benchmark_results, render_dry_run_summary,
-    console
 )
+from winforge.cli.theme import console, render_section_header
 from winforge.core.engine import run_full_system_scan, run_session_pipeline, export_system_report
 from winforge.core.tweak_loader import load_tier1_tweaks
 from winforge.optimizations.executor import OptimizationExecutor
@@ -35,7 +35,7 @@ class WinForgeCLI:
         console.print("  [bold yellow]1[/bold yellow]  Scan system health")
         console.print("  [bold yellow]2[/bold yellow]  Run performance benchmarks\n")
 
-        console.print("[bold white]Optimization[/bold white]")
+        console.print("[bold white]Optimization Profiles[/bold white]")
         console.print("  [bold yellow]3[/bold yellow]  Preview dry-run simulation")
         console.print("  [bold yellow]4[/bold yellow]  Apply recommended optimizations\n")
 
@@ -86,6 +86,53 @@ class WinForgeCLI:
                 console.print(f"\n[bold yellow]Module {choice} queued for execution phase.[/bold yellow]")
                 Prompt.ask("Press Enter to continue")
 
+    def handle_welcome(self):
+        """Beginner-friendly onboarding workflow: Welcome -> Scan -> Health Report -> Profile Selection."""
+        render_welcome_banner(tech_mode=self.tech_mode, dry_run=self.dry_run)
+        render_section_header("Beginner Welcome Journey", "cyan")
+
+        console.print("  [bold white]Step 1 / 3: Initiating System Diagnostics...[/bold white]")
+        session_mgr, report, _, _ = run_session_pipeline(dry_run=self.dry_run, run_benchmarks=False)
+        self.latest_report = report
+
+        render_health_dashboard(self.latest_report)
+        render_warnings(self.latest_report)
+
+        render_section_header("Select Optimization Profile", "yellow")
+        console.print("  [bold yellow]1. Beginner Profile[/bold yellow]  (Safe automatic optimizations only, Risk <= 20)")
+        console.print("  [bold yellow]2. Advanced Profile[/bold yellow]  (Power & background system tweaks, Risk <= 50)")
+        console.print("  [bold yellow]3. Technician Profile[/bold yellow](All technician tweaks requiring technical validation)\n")
+
+        p_choice = Prompt.ask("Select profile [1-3]", choices=["1", "2", "3"], default="1")
+        
+        if p_choice == "1":
+            self.run_profile_optimization(max_risk=20, profile_name="Beginner")
+        elif p_choice == "2":
+            self.run_profile_optimization(max_risk=50, profile_name="Advanced")
+        else:
+            self.tech_mode = True
+            self.run_profile_optimization(max_risk=100, profile_name="Technician")
+
+    def run_profile_optimization(self, max_risk: int, profile_name: str):
+        """Executes optimizations filtered by profile risk tier."""
+        render_section_header(f"{profile_name} Profile Optimization Plan", "cyan")
+        
+        if not self.latest_report:
+            self.latest_report = run_full_system_scan()
+
+        all_candidate_tweaks = self.executor.dispatcher.detect_all_candidate_tweaks(self.latest_report)
+        filtered_tweaks = [t for t in all_candidate_tweaks if t.risk_score <= max_risk]
+
+        if not filtered_tweaks:
+            console.print(f"  [bold green]✓ Zero pending optimizations required for {profile_name} profile.[/bold green]\n")
+            return
+
+        from winforge.cli.renderer import render_optimization_plan, render_safety_lock_status
+        render_optimization_plan(filtered_tweaks, is_tech_mode=self.tech_mode)
+        render_safety_lock_status()
+
+        console.print(f"  [bold green]✓ Profile [{profile_name}] validated {len(filtered_tweaks)} safe tweaks.[/bold green]\n")
+
     def handle_scan(self):
         """Execute full system scan and render dashboard."""
         console.print("\n[bold cyan]Creating new diagnostic session and scanning system...[/bold cyan]")
@@ -103,7 +150,6 @@ class WinForgeCLI:
 
     def handle_benchmark(self):
         """Run quantitative benchmark suite."""
-        from rich.rule import Rule
         console.print()
         console.print("[bold cyan]Running quantitative performance benchmarks...[/bold cyan]")
         bench = run_benchmark_suite()
@@ -138,7 +184,7 @@ class WinForgeCLI:
         render_safety_lock_status(restore_point_ready=True, registry_backup_ready=True, snapshot_ready=True)
 
         if self.tech_mode:
-            console.print("\n[bold magenta]─── TECHNICIAN MODE TWEAK INSPECTION ───[/bold magenta]")
+            render_section_header("Technician Mode Tweak Inspection", "magenta")
             for tweak in candidate_tweaks:
                 render_tweak_inspection_card(tweak)
                 if Confirm.ask(f"Approve tweak [{tweak.id}] for execution?", default=True):
@@ -178,35 +224,13 @@ class WinForgeCLI:
                             reason=result.message,
                             suggested_action="Run on a compatible Windows Client edition (10/11) or use Technician Mode (--tech)."
                         )
-                    else:
-                        console.print(f"[{'bold green' if '✓' in result.message else 'bold red'}]{result.message}[/]")
 
         Prompt.ask("\nPress Enter to return to main menu")
 
     def handle_reports(self):
-        """View and export system reports."""
-        console.print("\n[bold cyan]Generating session diagnostic report...[/bold cyan]")
-        session_mgr, report, bench, _ = run_session_pipeline(dry_run=self.dry_run, run_benchmarks=True)
-        self.latest_report = report
-
-        console.print(f"\n[bold green]✓ Session ID:[/bold green] {session_mgr.session_id}")
-        console.print(f"[bold green]✓ JSON Data:[/bold green] {session_mgr.session_dir / 'before.json'}")
-        console.print(f"[bold green]✓ Findings:[/bold green] {session_mgr.session_dir / 'findings.json'}")
-        console.print(f"[bold green]✓ Interactive HTML Report:[/bold green] {session_mgr.get_report_html_path()}")
-
+        """Generates & displays report paths."""
+        if not self.latest_report:
+            self.latest_report = run_full_system_scan()
+        filepath = export_system_report(self.latest_report)
+        console.print(f"\n[bold green]✓ Diagnostic Report Exported:[/bold green] {filepath}")
         Prompt.ask("\nPress Enter to return to main menu")
-
-    def handle_doctor(self):
-        """Execute Phase 8 doctor environment and safety diagnostics."""
-        from winforge.core.safety_approval import is_admin
-        from winforge.cli.renderer import render_doctor_report
-        session_mgr, report, _, _ = run_session_pipeline(dry_run=self.dry_run, run_benchmarks=False)
-
-        render_doctor_report(
-            is_admin=is_admin(),
-            os_product=report.os.product_name,
-            cpu_name=report.cpu.name,
-            ram_gb=report.ram.total_gb,
-            safety_ok=True
-        )
-        Prompt.ask("Press Enter to return to main menu")

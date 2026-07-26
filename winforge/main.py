@@ -37,14 +37,21 @@ def main():
     parser.add_argument("--scan", action="store_true", help="Run non-interactive system diagnostic scan and exit")
     parser.add_argument("--dry-run", action="store_true", help="Run optimization simulation without system mutations")
     parser.add_argument("--execute", action="store_true", help="Execute approved production optimizations (Requires Admin)")
+    parser.add_argument("--safe", action="store_true", help="Run Beginner profile optimizations (Risk <= 20)")
+    parser.add_argument("--advanced", action="store_true", help="Run Advanced profile optimizations (Risk <= 50)")
     parser.add_argument("--tech", action="store_true", help="Launch in Technician Mode with advanced controls & inspection cards")
     parser.add_argument("--license-info", action="store_true", help="Display Open Source Environment Information")
     parser.add_argument("--license-check", action="store_true", help="Perform offline verification and environment check")
     parser.add_argument("--demo", action="store_true", help="Run non-interactive demo/preview mode for screenshots (read-only)")
     parser.add_argument("--version", action="version", version=f"WINFORGE v{__version__} by @{__author__}")
 
-    # Subcommand positional alias
-    parser.add_argument("command", nargs="?", choices=["scan", "analyze", "optimize", "dry-run", "benchmark", "doctor", "license", "tech"], help="Subcommand shortcut (e.g. scan, optimize, doctor, benchmark, tech)")
+    # Subcommand positional aliases
+    parser.add_argument(
+        "command",
+        nargs="?",
+        choices=["welcome", "scan", "analyze", "optimize", "dry-run", "benchmark", "doctor", "license", "tech"],
+        help="Subcommand shortcut (e.g. welcome, scan, optimize, doctor, benchmark, tech)"
+    )
 
     args = parser.parse_args()
 
@@ -56,9 +63,12 @@ def main():
 
     # Resolve positional subcommand aliases
     cmd = args.command
+    is_welcome = cmd == "welcome"
     is_scan = args.scan or cmd in ("scan", "analyze")
     is_dry_run = args.dry_run or cmd == "dry-run"
     is_execute = args.execute or cmd == "optimize"
+    is_safe_profile = args.safe
+    is_adv_profile = args.advanced
     is_tech = args.tech or cmd == "tech"
     is_license = args.license_info or args.license_check or cmd == "license"
     is_doctor = cmd == "doctor"
@@ -66,7 +76,13 @@ def main():
 
     logger.info(f"Launching WINFORGE v{__version__} by @{__author__} (Cmd: {cmd}, TechMode: {is_tech}, DryRun: {is_dry_run}, Execute: {is_execute})")
 
-    # Mode Doctor: Non-interactive doctor check
+    # Subcommand 1: Welcome Journey
+    if is_welcome:
+        app = WinForgeCLI(tech_mode=is_tech, dry_run=True, mock_execution=True)
+        app.handle_welcome()
+        sys.exit(0)
+
+    # Subcommand 2: Doctor Check
     if is_doctor:
         from winforge.core.safety_approval import is_admin
         from winforge.cli.renderer import render_doctor_report
@@ -80,7 +96,7 @@ def main():
         )
         sys.exit(0)
 
-    # Mode 0: Environment Info / Check
+    # Subcommand 3: Environment Info / Check
     if is_license:
         lic_mgr = LicensePolicyManager()
         val_res = lic_mgr.get_active_license()
@@ -105,7 +121,7 @@ def main():
         for w in integrity_warnings:
             print(f" ! {w}")
 
-    # Mode 1: Non-interactive Scan / Analyze
+    # Subcommand 4: Scan / Analyze
     if is_scan:
         report = run_full_system_scan()
         render_health_dashboard(report)
@@ -115,7 +131,7 @@ def main():
         print(f"\n[SCAN COMPLETE] Diagnostic report generated: {filepath}")
         sys.exit(0)
 
-    # Mode 2: Dry-Run Simulation
+    # Subcommand 5: Dry-Run Simulation
     if is_dry_run:
         console.print("\n[DRY-RUN SIMULATION MODE]")
         session_mgr, report, _, sim_res = run_session_pipeline(dry_run=True, run_benchmarks=False)
@@ -123,7 +139,7 @@ def main():
         render_dry_run_summary(session_mgr, report, sim_res)
         sys.exit(0)
 
-    # Mode 2c: Non-interactive benchmark
+    # Subcommand 6: Benchmark
     if cmd == "benchmark":
         from winforge.benchmark.runner import run_benchmark_suite
         console.print("\n[bold cyan]Running quantitative performance benchmarks...[/bold cyan]")
@@ -131,64 +147,15 @@ def main():
         render_benchmark_results(bench)
         sys.exit(0)
 
-    # Mode 2b: Demo / Screenshot Preview Mode (read-only, no user prompts)
-    if is_demo:
-        from winforge.benchmark.runner import run_benchmark_suite
-        from winforge.core.session import SessionManager
-        from rich.panel import Panel
-        from rich.text import Text
-        from rich.rule import Rule
-        from rich.prompt import Prompt
-
-        console.print()
-        console.print(Rule("[bold cyan]WINFORGE :: DEMO MODE — Read-Only Preview[/bold cyan]", style="cyan"))
-        console.print()
-
-        # 1. Full system scan
-        report = run_full_system_scan()
-        render_health_dashboard(report)
-        render_hardware_summary(report)
-        render_warnings(report)
-
-        # 2. Benchmark suite
-        bench = run_benchmark_suite()
-        render_benchmark_results(bench)
-
-        # 3. Session + report paths (read-only, no mutations)
-        session_mgr = SessionManager()
-        filepath = export_system_report(report)
-
-        # 4. Final summary panel
-        score = round(report.health_score, 1)
-        warn_count = len(report.warnings)
-
-        summary = Text()
-        summary.append("  System Health Score:      ", style="bold white")
-        summary.append(f"{score} / 100\n", style="bold yellow")
-        summary.append("  Benchmark Metrics:        ", style="bold white")
-        summary.append("5 metrics captured (CPU, RAM, Disk, Timer, DNS)\n", style="bold cyan")
-        summary.append("  System Warnings:          ", style="bold white")
-        if warn_count:
-            summary.append(f"{warn_count} degradation issue(s) detected\n", style="bold yellow")
-        else:
-            summary.append("None — system is in optimal state\n", style="bold green")
-        summary.append("  JSON Report:       ", style="bold white")
-        summary.append(f"{filepath}\n", style="dim white")
-        summary.append("  HTML Report:       ", style="bold white")
-        summary.append(f"{session_mgr.get_report_html_path()}\n", style="bold green")
-
-        console.print()
-        console.print(Panel(
-            summary,
-            title="[bold green]✓ WinForge Demo Completed Successfully[/bold green]",
-            border_style="green"
-        ))
-        console.print()
-
-        Prompt.ask("[bold cyan]Press Enter to exit[/bold cyan]")
+    # Subcommand 7: Profile-based optimization flags (--safe / --advanced / --tech)
+    if is_safe_profile or is_adv_profile:
+        app = WinForgeCLI(tech_mode=is_tech, dry_run=not is_execute, mock_execution=not is_execute)
+        max_risk = 20 if is_safe_profile else 50
+        profile_name = "Safe / Beginner" if is_safe_profile else "Advanced"
+        app.run_profile_optimization(max_risk=max_risk, profile_name=profile_name)
         sys.exit(0)
 
-    # Mode 3: Production Execution / Optimize
+    # Subcommand 8: Production Execution / Optimize
     if is_execute:
         admin_ok = require_admin()
         if not admin_ok:

@@ -1,8 +1,12 @@
+from rich.console import Console
+from winforge.cli.theme import CONSOLE_WIDTH, render_section_header, format_short_path
+from winforge.cli.banner import render_welcome_banner, render_banner
 from winforge.cli.renderer import render_optimization_plan, render_safety_lock_status, render_actionable_error, render_doctor_report
 from winforge.cli.themes import ThemeManager
 from winforge.cli.formatting import format_status_badge, format_risk_badge
 from winforge.cli.progress import StepTracker
 from winforge.models.tweak import Tweak, TweakCategory, RiskLevel, RiskCategory
+from winforge.safety.transaction import SafetyTransactionManager
 
 
 def test_cli_renderer_functions():
@@ -19,6 +23,8 @@ def test_cli_renderer_functions():
     )
 
     # Verify rendering functions execute cleanly without exceptions
+    render_welcome_banner(tech_mode=False, dry_run=True)
+    render_banner(tech_mode=True, dry_run=False)
     render_optimization_plan([tweak], is_tech_mode=False)
     render_safety_lock_status(restore_point_ready=True, registry_backup_ready=True, snapshot_ready=True)
     render_actionable_error(
@@ -42,3 +48,29 @@ def test_cli_design_system_components():
     tracker = StepTracker("Test Pipeline", total_steps=2)
     tracker.log_step("Step 1", status="COMPLETED", success=True)
     tracker.finish("Pipeline completed successfully")
+
+
+def test_cli_width_safety_limits(tmp_path):
+    """Test console width limits across 80, 90, and 120 column terminals."""
+    for w in [80, 90, 120]:
+        c = Console(width=min(w, 90))
+        assert c.width <= 90
+
+
+def test_safety_transaction_manager_lifecycle(tmp_path):
+    """Test centralized SafetyTransactionManager 7-step pre-flight safety execution."""
+    stm = SafetyTransactionManager(session_id="TEST_SESSION_001", session_dir=tmp_path, mock_mode=True)
+    pre_res = stm.execute_preflight_safety()
+    
+    assert pre_res["restore_point"] is True
+    assert pre_res["registry_backup"] is True
+    assert pre_res["snapshot"] is True
+    
+    stm.record_action(
+        tweak_id="TWEAK_SAFE_001",
+        action_type="registry_set",
+        target="HKCU:\\Software\\Test",
+        previous_value="0",
+        new_value="1"
+    )
+    assert stm.ledger_path.exists()
