@@ -8,7 +8,7 @@ from winforge.cli.themes import ThemeManager
 from winforge.cli.formatting import format_status_badge, format_risk_badge
 from winforge.cli.progress import StepTracker
 from winforge.models.tweak import Tweak, TweakCategory, RiskLevel, RiskCategory
-from winforge.models.system import SystemHealthReport, CPUInfo, RAMInfo, GPUInfo, PowerPlan
+from winforge.models.system import SystemHealthReport, CPUInfo, RAMInfo, GPUInfo, PowerPlan, OSInfo, CategoryScores
 from winforge.analyzers.hardware_profile import hardware_engine
 from winforge.safety.transaction import SafetyTransactionManager
 
@@ -70,13 +70,13 @@ def test_wizard_and_education_cards():
 def test_hardware_intelligence_engine():
     report = SystemHealthReport(
         timestamp="2026-07-26T18:00:00",
-        os=None,
+        os=OSInfo(product_name="Windows 11 Pro"),
         cpu=CPUInfo(name="Intel Core i7-12700K", logical_cores=16, physical_cores=12, max_frequency_mhz=3600.0, current_usage_pct=15.0),
         ram=RAMInfo(total_gb=32.0, available_gb=16.0, used_gb=16.0, percent_used=50.0),
         gpu=[GPUInfo(name="NVIDIA GeForce RTX 4080", vram_mb=16384, driver_version="550.0")],
         drives=[],
         power=PowerPlan(active_name="High Performance", active_guid="...", is_on_battery=False),
-        categories=None,
+        categories=CategoryScores(performance_score=100.0, security_score=100.0, maintenance_score=100.0, startup_score=100.0),
         health_score=90.0,
         startup_count=5,
         non_essential_services_count=10,
