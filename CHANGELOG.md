@@ -5,22 +5,23 @@ All notable changes to **WinForge** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.1] - 2026-07-26
 
 ### Added
-- **`--demo` Mode**: Non-interactive read-only preview mode that runs a full system scan, benchmark suite, and renders all output panels without user prompts. Terminal stays open with a structured completion summary panel until user presses Enter. Suitable for screenshots and presentations.
-- **`benchmark` Subcommand**: Non-interactive benchmark-only mode (`WinForge.exe benchmark`) now exits cleanly after printing results instead of falling through to the interactive menu.
+- **Professional CLI Design System**: Tokenized color palette theme manager (`winforge/cli/themes.py`), status & risk badges (`winforge/cli/formatting.py`), and interactive prompts (`winforge/cli/prompts.py`).
+- **`winforge doctor` Subcommand**: Environment and 4-Layer Safety Engine diagnostic tool checking Administrator elevation, OS compatibility, CPU/RAM status, and restore point readiness.
+- **Pre-Execution Optimization Plan & 4-Layer Safety Lock Panels**: Rendered via [`winforge/cli/renderer.py`](file:///c:/Users/Admin/Desktop/Twek/winforge/cli/renderer.py) before any mutations occur.
+- **3-Part Actionable Error Panels**: Provides clear 3-step error reporting (*What happened*, *Why it happened*, *Suggested action*) for policy blocks and execution errors.
+- **`StepTracker` Progress Tracker**: Multi-step pipeline execution tracker in [`winforge/cli/progress.py`](file:///c:/Users/Admin/Desktop/Twek/winforge/cli/progress.py).
+- **`--demo` Mode**: Non-interactive read-only preview mode that runs full system scan and benchmark suite for documentation screenshot generation.
 
 ### Improved
-- **Responsive Terminal Layout**: All Rich console instances now detect terminal width via `shutil.get_terminal_size()` at startup, capping at 160 columns. Tables and panels degrade gracefully from 80 to 160-column terminals without overflow.
-- **Structured Dry-Run Output**: `--dry-run` now renders a `SCORE PROJECTION` panel (baseline vs. projected vs. delta) and a `SESSION REPORT GENERATED` panel with file paths, replacing plain `print()` lines.
-- **Benchmark Results Table**: Benchmark output is now a 3-column aligned Rich table (`Metric / Result / Unit`) instead of plain bullet points.
-- **Shared Console Instance**: `winforge.cli.components` and `winforge.cli.interface` now share one width-aware `Console` instance, eliminating double rendering artefacts.
-- **CI Pipeline**: Added Python matrix (3.12, 3.13), pip dependency caching, explicit step names, and post-install CLI import smoke test.
+- **CI Reliability & OS Isolation**: Added deterministic `client_system_report` and `server_system_report` pytest fixtures in `tests/conftest.py` ensuring unit tests pass deterministically on Windows Server CI runners while preserving 100% of Server OS protection guardrails.
+- **Responsive Terminal Layout**: All Rich console instances detect terminal width via `shutil.get_terminal_size()`, handling 80 to 160-column terminal windows gracefully without line wrapping or border overflow.
 
 ### Fixed
-- `benchmark` subcommand previously launched the interactive menu instead of running benchmarks non-interactively.
-- `interface.py` created a second `Console()` instance independently of `components.py`, causing potential width inconsistency.
+- Fixed unit test policy evaluation failures on Windows Server CI runners (`windows-latest`).
+- Fixed service handler test flake by querying universal `RpcSs` service instead of consumer telemetry `DiagTrack`.
 
 ---
 
