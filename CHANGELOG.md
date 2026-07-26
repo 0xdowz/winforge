@@ -5,6 +5,15 @@ All notable changes to **WinForge** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-07-26
+
+### Added
+- **Repository Quality Overhaul**: Cleaned obsolete scratch logs and reorganized documentation structure to enterprise open-source standards.
+- **Enhanced Architecture Section in README**: Detailed 7-layer ASCII system workflow diagram outlining CLI presentation, Policy matrix guardrails, 4-Layer Safety Lock, Category Dispatcher, and Verification engine.
+
+### Improved
+- **Open-Source README Presentation**: Redesigned README.md with standard shields badges, structured Quick Start guides, CLI command matrix, safety architecture details, and PyTest validation commands.
+
 ## [1.0.1] - 2026-07-26
 
 ### Added
