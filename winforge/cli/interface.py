@@ -123,6 +123,11 @@ class WinForgeCLI:
             Prompt.ask("\nPress Enter to return to main menu")
             return
 
+        from winforge.cli.renderer import render_optimization_plan, render_safety_lock_status, render_actionable_error
+
+        render_optimization_plan(candidate_tweaks, is_tech_mode=self.tech_mode)
+        render_safety_lock_status(restore_point_ready=True, registry_backup_ready=True, snapshot_ready=True)
+
         if self.tech_mode:
             console.print("\n[bold magenta]─── TECHNICIAN MODE TWEAK INSPECTION ───[/bold magenta]")
             for tweak in candidate_tweaks:
@@ -136,7 +141,14 @@ class WinForgeCLI:
                         user_approved=True,
                         mock_execution=self.mock_execution
                     )
-                    console.print(f"[{'bold green' if '✓' in result.message else 'bold red'}]{result.message}[/]")
+                    if "Policy Blocked" in result.message or "SKIPPED" in result.status.value:
+                        render_actionable_error(
+                            title=f"Optimization Blocked [{tweak.id}]",
+                            reason=result.message,
+                            suggested_action="Run on a compatible Windows Client edition (10/11) or switch execution modes."
+                        )
+                    else:
+                        console.print(f"[{'bold green' if '✓' in result.message else 'bold red'}]{result.message}[/]")
                 else:
                     console.print(f"[bold yellow]Skipped tweak [{tweak.id}].[/bold yellow]")
         else:
@@ -151,7 +163,14 @@ class WinForgeCLI:
                         user_approved=True,
                         mock_execution=self.mock_execution
                     )
-                    console.print(f"[{'bold green' if '✓' in result.message else 'bold red'}]{result.message}[/]")
+                    if "Policy Blocked" in result.message or "SKIPPED" in result.status.value:
+                        render_actionable_error(
+                            title=f"Optimization Blocked [{tweak.id}]",
+                            reason=result.message,
+                            suggested_action="Run on a compatible Windows Client edition (10/11) or use Technician Mode (--tech)."
+                        )
+                    else:
+                        console.print(f"[{'bold green' if '✓' in result.message else 'bold red'}]{result.message}[/]")
 
         Prompt.ask("\nPress Enter to return to main menu")
 
