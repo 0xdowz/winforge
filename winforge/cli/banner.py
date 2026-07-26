@@ -1,14 +1,11 @@
 """
 WinForge CLI Banner — Compact Brand Header.
-Provides compact branding without repeating multi-line banners.
+Provides compact branding using winforge/cli/theme.py.
 """
 
-from rich.console import Console
 from rich.text import Text
-from rich.rule import Rule
-
 from winforge import __version__
-from winforge.cli.components import console
+from winforge.cli.theme import console
 
 
 def render_banner(tech_mode: bool = False, dry_run: bool = True):
@@ -28,5 +25,4 @@ def render_banner(tech_mode: bool = False, dry_run: bool = True):
 
     console.print()
     console.print(header_text)
-    console.print(Rule(style="dim cyan"))
     console.print()

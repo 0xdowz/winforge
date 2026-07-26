@@ -1,40 +1,24 @@
 """
 WinForge CLI Components — Modern Terminal Presentation Library.
-Provides clean visual hierarchy, section dividers, status badges, and hardware tables.
+Provides clean visual hierarchy, short section headers, status badges, and hardware tables.
 Enforces max 90-column width for clean rendering across CMD, PowerShell, and Windows Terminal.
 """
 
-import shutil
-from rich.console import Console
 from rich.table import Table
 from rich.text import Text
-from rich.rule import Rule
 
 from winforge.models.system import SystemHealthReport
 from winforge.models.tweak import Tweak
+from winforge.cli.theme import console, CONSOLE_WIDTH, render_section_header, format_short_path
 from winforge.cli.formatting import (
     format_status_badge,
     format_risk_badge,
-    ICON_SUCCESS,
-    ICON_WARNING,
-    ICON_ERROR,
     get_status_icon,
 )
 
-# Cap width to 90 columns for perfect rendering in CMD / PowerShell
-_term_width = min(shutil.get_terminal_size((80, 24)).columns, 90)
-console = Console(width=_term_width)
-
-
-def _section_rule(label: str, style: str = "dim cyan"):
-    """Prints a clean visual section separator rule."""
-    console.print()
-    console.print(Rule(f"[bold white]{label}[/bold white]", style=style))
-    console.print()
-
 
 def render_health_dashboard(report: SystemHealthReport):
-    """Renders clean, structured System Health Overview."""
+    """Renders clean, structured System Health Overview as aligned text."""
     score = round(report.health_score, 1)
 
     if score >= 85:
@@ -47,7 +31,7 @@ def render_health_dashboard(report: SystemHealthReport):
         score_style = "bold red"
         badge_text = "CRITICAL"
 
-    _section_rule("System Health Overview", "dim cyan")
+    render_section_header("System Health Overview", "cyan")
 
     console.print("  Health Score:")
     console.print(f"  [bold white]{score} / 100[/bold white]  [{score_style}]{badge_text}[/{score_style}]\n")
@@ -72,7 +56,7 @@ def render_health_dashboard(report: SystemHealthReport):
 
 def render_hardware_summary(report: SystemHealthReport):
     """Renders hardware specification table cleanly with box=None, padding=(0, 1)."""
-    _section_rule("Hardware Specification", "dim cyan")
+    render_section_header("Hardware Specification", "cyan")
 
     table = Table(
         box=None,
@@ -101,8 +85,8 @@ def render_hardware_summary(report: SystemHealthReport):
 
 
 def render_warnings(report: SystemHealthReport):
-    """Renders concise system degradation warnings list."""
-    _section_rule("Detected System Issues", "dim yellow")
+    """Renders concise system degradation warnings list as aligned text."""
+    render_section_header("Detected System Issues", "yellow")
 
     if not report.warnings:
         warn_icon = get_status_icon("success")
@@ -117,7 +101,7 @@ def render_warnings(report: SystemHealthReport):
 
 def render_benchmark_results(bench):
     """Renders quantitative performance benchmark table cleanly with box=None, padding=(0, 1)."""
-    _section_rule("Performance Benchmark Results", "dim cyan")
+    render_section_header("Performance Benchmark Results", "cyan")
 
     table = Table(
         box=None,
@@ -139,8 +123,8 @@ def render_benchmark_results(bench):
 
 
 def render_dry_run_summary(session_mgr, report, sim_res):
-    """Renders structured Dry-Run simulation summary without duplicate warnings."""
-    _section_rule("Dry-Run Simulation Complete", "dim green")
+    """Renders structured Dry-Run simulation summary with short paths."""
+    render_section_header("Dry-Run Simulation Complete", "green")
 
     if sim_res:
         baseline = sim_res.get("baseline_health_score", round(report.health_score, 1))
@@ -151,15 +135,15 @@ def render_dry_run_summary(session_mgr, report, sim_res):
         console.print("  [bold white]Projected Score:[/bold white]   " + f"[green]{projected} / 100[/green]")
         console.print("  [bold white]Score Improvement:[/bold white] " + f"[cyan]+{delta} points[/cyan]\n")
 
-    console.print("  [bold white]Session Reports:[/bold white]")
-    console.print(f"   • Session ID:    [cyan]{session_mgr.session_id}[/cyan]")
-    console.print(f"   • Simulation:    [dim]{session_mgr.session_dir / 'findings.json'}[/dim]")
-    console.print(f"   • HTML Report:   [green]{session_mgr.get_report_html_path()}[/green]\n")
+    console.print("  [bold white]Session Reports Generated:[/bold white]")
+    console.print(f"   • Session ID:  [cyan]{session_mgr.session_id}[/cyan]")
+    console.print(f"   • Log File:    [dim]{format_short_path(session_mgr.session_dir / 'findings.json')}[/dim]")
+    console.print(f"   • HTML Report: [green]{format_short_path(session_mgr.get_report_html_path())}[/green]\n")
 
 
 def render_tweak_inspection_card(tweak: Tweak):
     """Renders granular Technician Mode Tweak Inspection Card as aligned text list."""
-    _section_rule(f"Tweak Inspection Card :: {tweak.id}", "dim magenta")
+    render_section_header(f"Tweak Inspection Card :: {tweak.id}", "magenta")
 
     console.print(f"  [bold cyan]Tweak Name:[/bold cyan]        [bold white]{tweak.name}[/bold white]")
     cat_val = tweak.category.value if hasattr(tweak.category, "value") else str(tweak.category)

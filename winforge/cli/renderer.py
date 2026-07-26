@@ -4,21 +4,17 @@ Provides structured visual rendering for Optimization Plans, Safety Locks, Docto
 """
 
 from typing import List, Optional
-from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
-from rich.rule import Rule
 
 from winforge.models.tweak import Tweak, RiskCategory
-from winforge.cli.components import console
+from winforge.cli.theme import console, render_section_header
 from winforge.cli.formatting import format_risk_badge, get_status_icon, ICON_SUCCESS, ICON_WARNING, ICON_ERROR
 
 
 def render_optimization_plan(candidate_tweaks: List[Tweak], is_tech_mode: bool = False):
     """Renders structured pre-execution Optimization Plan summary as an aligned text list."""
-    console.print()
-    console.print(Rule("[bold white]Optimization Preview[/bold white]", style="dim cyan"))
-    console.print()
+    render_section_header("Optimization Preview", "cyan")
 
     console.print(f"  [bold white]Changes Planned:[/bold white] [bold cyan]{len(candidate_tweaks)} optimizations[/bold cyan]\n")
 
@@ -32,8 +28,7 @@ def render_optimization_plan(candidate_tweaks: List[Tweak], is_tech_mode: bool =
 
 def render_safety_lock_status(restore_point_ready: bool = True, registry_backup_ready: bool = True, snapshot_ready: bool = True):
     """Renders 4-Layer Safety Lock verification status."""
-    console.print(Rule("[bold white]Safety Verification[/bold white]", style="dim green"))
-    console.print()
+    render_section_header("Safety Verification", "green")
 
     r_icon = get_status_icon("success" if restore_point_ready else "warning")
     b_icon = get_status_icon("success" if registry_backup_ready else "warning")
@@ -72,9 +67,7 @@ def render_actionable_error(title: str, reason: str, suggested_action: str):
 
 def render_doctor_report(is_admin: bool, os_product: str, cpu_name: str, ram_gb: float, safety_ok: bool = True):
     """Renders System Health & Environment Doctor Diagnostic Report as an aligned text list."""
-    console.print()
-    console.print(Rule("[bold white]WinForge Doctor[/bold white]", style="dim cyan"))
-    console.print()
+    render_section_header("WinForge Doctor", "cyan")
 
     admin_icon = get_status_icon("success" if is_admin else "warning")
     admin_msg = "[bold green]Active[/bold green]" if is_admin else "[bold yellow]Run as Administrator required[/bold yellow]"
