@@ -2,6 +2,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from winforge.models.tweak import Tweak, TweakCategory, RiskCategory
+from winforge.optimizations.state_machine import TweakState
 from winforge.optimizations.dispatcher import CategoryDispatcher
 from winforge.optimizations.executor import OptimizationExecutor
 from winforge.optimizations.registry_handler import RegistryHandler
