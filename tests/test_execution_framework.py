@@ -18,37 +18,35 @@ def test_tweak_state_tracker():
     assert tracker.current_state == TweakState.ANALYZED
 
 
-def test_optimization_executor_mock():
-    with patch("winforge.core.safety_approval.is_admin", return_value=True):
-        executor = OptimizationExecutor()
-        report = run_full_system_scan()
-        session_mgr = SessionManager()
+def test_optimization_executor_mock(client_system_report, mock_admin_privileges):
+    executor = OptimizationExecutor()
+    session_mgr = SessionManager()
 
-        dummy_tweak = Tweak(
-            id="TWEAK_GAME_001",
-            name="GPU Priority Optimization",
-            description="Dummy test tweak",
-            category=TweakCategory.GAMING,
-            risk_level=RiskLevel.LOW,
-            risk_score=10,
-            risk_category=RiskCategory.SAFE,
-            technician_only=False,
-            detection_logic={},
-            apply_method={"type": "registry", "hive": "HKLM", "key": "SOFTWARE\\Test", "value_name": "TestVal", "value_data": 1},
-            rollback_method={"type": "registry", "hive": "HKLM", "key": "SOFTWARE\\Test", "value_name": "TestVal", "value_data": 0}
-        )
+    dummy_tweak = Tweak(
+        id="TWEAK_GAME_001",
+        name="GPU Priority Optimization",
+        description="Dummy test tweak",
+        category=TweakCategory.GAMING,
+        risk_level=RiskLevel.LOW,
+        risk_score=10,
+        risk_category=RiskCategory.SAFE,
+        technician_only=False,
+        detection_logic={},
+        apply_method={"type": "registry", "hive": "HKLM", "key": "SOFTWARE\\Test", "value_name": "TestVal", "value_data": 1},
+        rollback_method={"type": "registry", "hive": "HKLM", "key": "SOFTWARE\\Test", "value_name": "TestVal", "value_data": 0}
+    )
 
-        tracker, result = executor.process_tweak_pipeline(
-            tweak=dummy_tweak,
-            report=report,
-            session_mgr=session_mgr,
-            is_tech_mode=False,
-            user_approved=True,
-            mock_execution=True
-        )
+    tracker, result = executor.process_tweak_pipeline(
+        tweak=dummy_tweak,
+        report=client_system_report,
+        session_mgr=session_mgr,
+        is_tech_mode=False,
+        user_approved=True,
+        mock_execution=True
+    )
 
-        assert tracker.current_state == TweakState.COMPLETED
-        assert result.status.value == "SIMULATED"
+    assert tracker.current_state == TweakState.COMPLETED
+    assert result.status.value == "SIMULATED"
 
 
 def test_tweak_verifier_mock():

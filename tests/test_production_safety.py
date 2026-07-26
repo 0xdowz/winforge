@@ -58,35 +58,64 @@ def test_client_mode_risk_tier_restriction():
     assert "RISK TIER RESTRICTED" in res.message
 
 
-def test_technician_mode_allowed_risk_tweak():
-    with patch("winforge.core.safety_approval.is_admin", return_value=True):
-        executor = OptimizationExecutor()
-        report = run_full_system_scan()
-        session_mgr = SessionManager()
+def test_technician_mode_allowed_risk_tweak(client_system_report, mock_admin_privileges):
+    executor = OptimizationExecutor()
+    session_mgr = SessionManager()
 
-        tech_tweak = Tweak(
-            id="TWEAK_GAME_004",
-            name="Network Throttling Index",
-            description="Technician tweak",
-            category=TweakCategory.GAMING,
-            risk_score=85,
-            risk_category=RiskCategory.TECHNICIAN_ONLY,
-            technician_only=True,
-            detection_logic={}, apply_method={"type": "registry", "key": "HKLM\\Software\\Test"}, rollback_method={}
-        )
+    tech_tweak = Tweak(
+        id="TWEAK_GAME_004",
+        name="Network Throttling Index",
+        description="Technician tweak",
+        category=TweakCategory.GAMING,
+        risk_score=85,
+        risk_category=RiskCategory.TECHNICIAN_ONLY,
+        technician_only=True,
+        detection_logic={}, apply_method={"type": "registry", "key": "HKLM\\Software\\Test"}, rollback_method={}
+    )
 
-        # Attempt execution in Technician Mode (is_tech_mode=True)
-        tracker, res = executor.process_tweak_pipeline(
-            tweak=tech_tweak,
-            report=report,
-            session_mgr=session_mgr,
-            is_tech_mode=True,
-            user_approved=True,
-            mock_execution=True
-        )
+    # Attempt execution in Technician Mode (is_tech_mode=True) on Client OS
+    tracker, res = executor.process_tweak_pipeline(
+        tweak=tech_tweak,
+        report=client_system_report,
+        session_mgr=session_mgr,
+        is_tech_mode=True,
+        user_approved=True,
+        mock_execution=True
+    )
 
-        # Must succeed in Technician mode
-        assert tracker.current_state.value == "COMPLETED"
+    # Must succeed in Technician mode on Client OS
+    assert tracker.current_state.value == "COMPLETED"
+
+
+def test_server_mode_gaming_tweak_blocked(server_system_report, mock_admin_privileges):
+    """Verifies that Gaming tweaks are strictly blocked on Windows Server OS to preserve server stability."""
+    executor = OptimizationExecutor()
+    session_mgr = SessionManager()
+
+    tech_tweak = Tweak(
+        id="TWEAK_GAME_004",
+        name="Network Throttling Index",
+        description="Technician tweak",
+        category=TweakCategory.GAMING,
+        risk_score=85,
+        risk_category=RiskCategory.TECHNICIAN_ONLY,
+        technician_only=True,
+        detection_logic={}, apply_method={"type": "registry", "key": "HKLM\\Software\\Test"}, rollback_method={}
+    )
+
+    tracker, res = executor.process_tweak_pipeline(
+        tweak=tech_tweak,
+        report=server_system_report,
+        session_mgr=session_mgr,
+        is_tech_mode=True,
+        user_approved=True,
+        mock_execution=True
+    )
+
+    # Must fail policy check on Windows Server OS
+    assert tracker.current_state == TweakState.FAILED
+    assert res.status.value == "SKIPPED"
+    assert "Policy Blocked" in res.message
 
 
 def test_real_registry_isolated_test_key():
