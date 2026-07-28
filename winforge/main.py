@@ -218,9 +218,8 @@ def main():
 
     # Subcommand 12: Production Execution / Optimize
     if is_execute:
-        admin_ok = require_admin()
-        if not admin_ok:
-            console.print("\n[bold red][CRITICAL ERROR] Production execution requires Administrator privileges.[/bold red]")
+        from winforge.core.privileges import request_elevation_if_needed
+        if not request_elevation_if_needed():
             sys.exit(1)
 
         if not valid_checksums:

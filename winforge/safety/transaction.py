@@ -60,8 +60,8 @@ class SafetyTransactionManager(TransactionManager):
     """
     Centralized Safety Transaction Manager executing 7-step safety session sequence:
       1. Pre-flight safety verification
-      2. Create ONE system restore point
-      3. Create ONE atomic registry backup
+      2. Create ONE system restore point (Production mode only)
+      3. Create ONE atomic registry backup (Production mode only)
       4. Create ONE system snapshot
       5. Execute all approved tweaks
       6. Verify results
@@ -78,21 +78,28 @@ class SafetyTransactionManager(TransactionManager):
         self.snapshot_ready = False
 
     def execute_preflight_safety(self) -> Dict[str, bool]:
-        """Performs initial 4-Layer Safety Lock setup once per session."""
-        logger.info(f"Executing Pre-flight Safety for Session {self.session_id}")
+        """
+        Performs initial 4-Layer Safety Lock setup once per session.
+        In simulation/mock mode, performs ZERO system restore point attempts or registry exports.
+        """
+        logger.info(f"Executing Pre-flight Safety for Session {self.session_id} (Mock/DryRun: {self.mock_mode})")
         
-        # 1 & 2. System Restore Point
-        r_ok, _ = create_system_restore_point(description=f"WinForge_{self.session_id}")
-        self.restore_point_ready = r_ok or self.mock_mode
-        
-        # 3. Registry Backup
-        reg_file = self.session_dir / "backup.reg"
-        reg_ok, _ = export_registry_key("HKLM\\SOFTWARE", reg_file)
-        self.registry_backup_ready = reg_ok or self.mock_mode
-        
-        # 4. System Snapshot
-        self.snapshot_ready = True
-        
+        if self.mock_mode:
+            # Simulation Mode: Zero system modifications or registry exports
+            logger.info(f"[SIMULATION] Pre-flight safety simulated for Session {self.session_id}")
+            self.restore_point_ready = True
+            self.registry_backup_ready = True
+            self.snapshot_ready = True
+        else:
+            # Production Mode: Create System Restore Point & Registry Export
+            r_ok, _ = create_system_restore_point(description=f"WinForge_{self.session_id}")
+            self.restore_point_ready = r_ok
+            
+            reg_file = self.session_dir / "backup.reg"
+            reg_ok, _ = export_registry_key("HKLM\\SOFTWARE", reg_file)
+            self.registry_backup_ready = reg_ok
+            self.snapshot_ready = True
+
         return {
             "restore_point": self.restore_point_ready,
             "registry_backup": self.registry_backup_ready,

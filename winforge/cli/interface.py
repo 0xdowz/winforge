@@ -142,6 +142,11 @@ class WinForgeCLI:
         render_safety_lock_status()
 
         if Confirm.ask(f"Execute {len(filtered_tweaks)} {profile_name} optimizations now?", default=True):
+            if not self.mock_execution:
+                from winforge.core.privileges import request_elevation_if_needed
+                if not request_elevation_if_needed():
+                    return
+
             session_mgr, _, _, _ = run_session_pipeline(dry_run=self.dry_run, run_benchmarks=False)
             completed, successful, skipped = 0, 0, 0
             reasons = []
