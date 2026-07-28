@@ -43,7 +43,6 @@ def build_executable():
     cmd.extend([
         "--noconfirm",
         "--onefile",
-        "--uac-admin",
         "--name", "WinForge",
         "--add-data", f"config{sep}config",
         "--add-data", f"VERSION{sep}.",

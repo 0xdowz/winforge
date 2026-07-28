@@ -1,6 +1,8 @@
 import argparse
 import sys
+import os
 import logging
+import traceback
 from rich.prompt import Confirm
 
 # Ensure UTF-8 output encoding for legacy Windows console compatibility
@@ -12,7 +14,7 @@ if sys.platform == "win32":
         pass
 
 from winforge import __version__, __author__
-from winforge.core.logger import setup_logger
+from winforge.core.logger import setup_logger, log_startup_info, log_startup_exception
 from winforge.core.privileges import require_admin, is_admin
 from winforge.core.engine import run_full_system_scan, run_session_pipeline, export_system_report
 from winforge.core.checksums import verify_tweak_checksums
@@ -30,6 +32,9 @@ logger = logging.getLogger("winforge")
 
 
 def main():
+    # Record startup info
+    log_startup_info(sys.argv)
+
     parser = argparse.ArgumentParser(
         prog="WinForge",
         description="WINFORGE :: Free Open-Source Windows System Optimization CLI Tool",
@@ -234,5 +239,38 @@ def main():
     app.handle_welcome()
 
 
+def safe_entrypoint():
+    """Top-level safe entrypoint wrapping main execution with crash trapping."""
+    try:
+        main()
+    except SystemExit as se:
+        if se.code != 0:
+            log_startup_exception(se, f"SystemExit code {se.code}")
+        sys.exit(se.code)
+    except Exception as e:
+        log_startup_exception(e, "Unhandled Runtime Exception")
+
+        tb_str = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+
+        print("\n==================================================")
+        print(" [CRITICAL ERROR] WinForge failed to start.       ")
+        print("==================================================")
+        print(f" Exception Type: {type(e).__name__}")
+        print(f" Message:        {str(e)}")
+        print("\n Stack Trace:")
+        print(tb_str)
+        print(" Possible Cause: Unhandled runtime exception or resource initialization failure.")
+        print("==================================================\n")
+
+        # Pause if running in interactive terminal or double-clicked executable
+        if getattr(sys, "frozen", False) or sys.stdin.isatty():
+            try:
+                input("Press Enter to exit...")
+            except Exception:
+                pass
+
+        sys.exit(1)
+
+
 if __name__ == "__main__":
-    main()
+    safe_entrypoint()
