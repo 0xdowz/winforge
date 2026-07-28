@@ -84,10 +84,22 @@ def test_hardware_intelligence_engine_v2():
         warnings=[]
     )
     res = hardware_engine.analyze_hardware_profile(report)
+    
+    # Assert complete schema contract existence
+    required_keys = ["recommended_profile", "confidence_percent", "reasons", "rationale", "has_discrete_gpu", "is_on_battery"]
+    for key in required_keys:
+        assert key in res, f"Missing required hardware profile schema key: '{key}'"
+
+    assert isinstance(res["recommended_profile"], str)
+    assert isinstance(res["confidence_percent"], int)
+    assert isinstance(res["reasons"], list)
+    assert isinstance(res["rationale"], str)
+
     assert res["recommended_profile"] == "Gaming Performance Profile"
     assert res["confidence_percent"] == 92
     assert len(res["reasons"]) > 0
     assert "Dedicated GPU detected" in res["reasons"][0]
+    assert len(res["rationale"]) > 0
 
 
 def test_security_health_engine():

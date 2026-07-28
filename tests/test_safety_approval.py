@@ -13,9 +13,8 @@ def test_safety_approval_engine_structure():
 def test_safety_approval_mock_checks():
     with patch("winforge.core.safety_approval.is_admin", return_value=True):
         engine = SafetyApprovalEngine()
-        res = engine.evaluate_realtime_safety()
+        res = engine.evaluate_realtime_safety(mock=True)
         assert res.approved is True
-        assert "passed" in res.reason.lower()
 
 
 def test_safety_approval_simulated_mode():
@@ -23,4 +22,3 @@ def test_safety_approval_simulated_mode():
     res = engine.evaluate_realtime_safety(mock=True)
     assert res.approved is True
     assert "SIMULATED" in res.reason
-

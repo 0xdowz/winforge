@@ -48,10 +48,13 @@ class HardwareIntelligenceEngine:
             reasons.append("Standard Windows desktop configuration detected")
             reasons.append(f"CPU: {cpu_cores} cores, RAM: {total_ram} GB")
 
+        rationale_str = " • ".join(reasons)
+
         return {
             "recommended_profile": recommended_profile,
             "confidence_percent": confidence,
             "reasons": reasons,
+            "rationale": rationale_str,
             "has_discrete_gpu": has_discrete_gpu,
             "is_on_battery": is_battery,
         }

@@ -102,7 +102,8 @@ class WinForgeCLI:
 
         hw_info = hardware_engine.analyze_hardware_profile(self.latest_report)
         render_section_header("Hardware Intelligence Profile", "cyan")
-        console.print(f"  [bold white]Detected Hardware Profile:[/bold white] [bold green]{hw_info['recommended_profile']}[/bold green]")
+        conf_str = f" (Confidence: {hw_info['confidence_percent']}%)" if "confidence_percent" in hw_info else ""
+        console.print(f"  [bold white]Detected Hardware Profile:[/bold white] [bold green]{hw_info['recommended_profile']}[/bold green][bold cyan]{conf_str}[/bold cyan]")
         console.print(f"  [bold white]Recommendation Rationale:[/bold white]  [dim white]{hw_info['rationale']}[/dim white]\n")
 
         p_choice = wizard.render_profile_menu()
