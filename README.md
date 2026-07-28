@@ -40,7 +40,7 @@ Unlike scripts that execute unverified system modifications, WinForge evaluates 
 - **Centralized Schema Validation**: Guarantees zero runtime crashes on malformed tweak metadata with safe fallbacks.
 - **Policy-Driven Optimizations**: 6 category modules targeting Gaming latency, Power scheme policies, Startup hygiene, Service optimization, Disk cleanup, and Network settings.
 - **Risk Score Intelligence**: Categorizes tweaks (`SAFE`, `MODERATE`, `ADVANCED`, `TECHNICIAN ONLY`) with risk weighting (0–100) ensuring high-risk tweaks require technician confirmation.
-- **Portable Binary Execution**: Available as a standalone portable executable (`WinForge.exe`, ~38.8 MB).
+- **Portable Binary Execution**: Available as a standalone portable executable (`WinForge.exe`, ~38.8 MB) with embedded multi-resolution custom application icon (`assets/icon.ico`).
 
 ---
 
