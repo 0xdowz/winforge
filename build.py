@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def build_executable():
-    """Build standalone portable executable WinForge.exe via PyInstaller with custom application icon."""
+    """Build standalone portable executable WinForge.exe via PyInstaller with custom application icon and dynamic UAC elevation architecture."""
     print("==================================================")
     print("  WINFORGE: PyInstaller Portable Build Script")
     print("==================================================")
@@ -16,13 +16,12 @@ def build_executable():
     main_script = project_root / "winforge" / "main.py"
     icon_path = project_root / "assets" / "icon.ico"
 
-    # Clean existing dist file if unlocked
+    # Clean existing dist target if unlocked
     target_exe = dist_dir / ("WinForge.exe" if sys.platform == "win32" else "WinForge")
     if target_exe.exists():
         try:
             target_exe.unlink()
         except Exception:
-            # If locked by Windows Defender or OS handle, move aside
             try:
                 bak = dist_dir / "WinForge.exe.old"
                 if bak.exists():
@@ -49,6 +48,8 @@ def build_executable():
 
     if icon_path.exists():
         cmd_args.extend(["--icon", str(icon_path)])
+    else:
+        print(f"[WARNING] Icon file not found at {icon_path}. Building without custom icon.")
 
     cmd_args.extend([
         "--add-data", f"config{sep}config",

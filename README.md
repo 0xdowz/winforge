@@ -1,4 +1,4 @@
-# WinForge :: Windows Performance Intelligence & Optimization Platform
+# WinForge :: Windows Performance Intelligence Platform
 
 ```
 ██╗  ██╗  ██╗██╗███╗   ██╗███████╗██████╗ ██████╗  ██████╗ ███████╗
@@ -17,27 +17,33 @@
 
 ---
 
-**WinForge** is a professional Windows performance intelligence, health diagnostic, and system optimization CLI platform created by **@0xdowz**. Built specifically for IT technicians, system administrators, and performance enthusiasts, WinForge provides a safe, transparent, policy-driven, and 100% reversible environment for Windows performance tuning.
+## Overview
 
-Unlike unverified PowerShell scripts or black-box optimizer utilities that corrupt system settings or trigger unrecoverable crashes, WinForge operates as a **transactional, state-machine-driven engine**. Every system modification is evaluated against policy guardrails, backed up prior to execution, and protected by an automated LIFO rollback mechanism.
+**WinForge** is an open-source Windows performance intelligence, diagnostic, and optimization CLI platform developed by **@0xdowz**. Designed for system administrators, IT technicians, and power users, WinForge provides a transparent, policy-driven, and fully reversible framework for inspecting system health and tuning performance parameters.
+
+WinForge is built on a **transactional state-machine architecture**. System modifications are evaluated against policy rules, backed up prior to execution, and protected by an automated LIFO rollback engine.
 
 ---
 
-## 1. Key Features
+## Features
 
-- **Hardware Intelligence Engine v2**: Auto-detects CPU topology, discrete vs. integrated GPU, RAM capacity, storage drive types (SSD/HDD), and power state to calculate tailored Gaming, Workstation, or Battery Efficiency profile recommendations with confidence scoring.
-- **4-Phase Safety Architecture**: Guarantees non-privileged analysis and education previews before prompting for explicit user confirmation and Administrator elevation.
-- **State-Persistence Elevation Resume (`--resume SESSION_ID`)**: Persists profile selections, candidate tweaks, and risk settings to `%LOCALAPPDATA%\WinForge\sessions\pending_execution.json` prior to elevation, allowing the elevated UAC process to automatically resume execution without losing user state.
-- **Disk Space Safety Gate (>= 5.0 GB)**: Enforces a strict 5.0 GB minimum free disk space check on system drive `C:\` to prevent low-disk lockups.
-- **Centralized Metadata Validation**: Protects against malformed tweak definitions with safe fallbacks (`"No rationale provided"`).
+- **Hardware Intelligence Engine v2**: Auto-detects CPU topology, discrete vs. integrated GPU, installed RAM, storage drive configurations, and AC vs. battery power state to generate profile recommendations (`Gaming Performance Profile`, `Workstation Profile`, `Battery Efficiency Profile`).
+- **4-Phase Transactional Safety Shield**:
+  - Phase 1: Non-privileged diagnostic analysis & recommendation preview.
+  - Phase 2: Explicit user approval (`Execute N optimizations now? [Y/n]`).
+  - Phase 3: Administrator privilege check & state-persistence setup.
+  - Phase 4: Elevated pre-flight safety locks (Restore Point, Registry Backup, Snapshot) & execution.
+- **State-Persistence Elevation Resume (`--resume SESSION_ID`)**: Persists session parameters to `%LOCALAPPDATA%\WinForge\sessions\pending_execution.json` prior to elevation, enabling the elevated process to automatically resume execution without user state loss.
+- **Disk Space Safety Gate (>= 5.0 GB)**: Halts pre-flight execution if free space on system drive `C:\` is under 5.0 GB.
+- **Centralized Schema Validation**: Validates tweak metadata and injects safe fallbacks (`"No rationale provided"`).
 - **Quantitative Benchmark Suite**: Measures CPU execution latency (ms), memory throughput (MB/s), disk sequential write speed (MB/s), timer resolution (ms), and DNS latency (ms).
-- **Security & Hygiene Health Inspector (`winforge security-check`)**: Audits Windows Defender, Firewall, UAC elevation, BitLocker, Windows Update, and Admin rights to calculate a Security Health Score (0–100).
-- **Disaster Recovery & Rollback Engine**: One-command session rollback (`winforge rollback SESSION_ID`) parses transaction ledgers to reverse applied registry keys and service state modifications.
-- **Standalone Portable Executable**: Zero-installer standalone portable binary (`WinForge.exe`, ~38.8 MB) with embedded multi-resolution icon (`assets/icon.ico`).
+- **Security Health Inspector (`winforge security-check`)**: Audits Windows Defender, Firewall, UAC, BitLocker, Windows Update, and Admin status to calculate a Security Health Score (0–100).
+- **Disaster Recovery Rollback Engine**: One-command session reversion (`winforge rollback SESSION_ID`) using `rollback.json` transaction ledgers.
+- **Standalone Portable Binary**: Built with embedded UAC administrator manifest (`requestedExecutionLevel="requireAdministrator"`) and custom multi-resolution icon (`assets/icon.ico`).
 
 ---
 
-## 2. Screenshots & Terminal Interface
+## Screenshots
 
 ```
 ─── System Health Overview ───
@@ -62,156 +68,96 @@ Unlike unverified PowerShell scripts or black-box optimizer utilities that corru
  Active Power Plan       High Performance (AC Power)                           
 ```
 
-![WinForge CLI Preview](docs/images/winforge-terminal-demo.png)
+![WinForge CLI Interface](docs/images/winforge-terminal-demo.png)
 
-*WinForge CLI running in interactive Client Mode featuring Rich terminal components, health dashboards, hardware tables, and safety lock cards.*
-
----
-
-## 3. Architecture & Safety Shield
-
-WinForge enforces a strict 4-layer transactional safety model:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    WinForge CLI Frontend                    │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
- ┌─────────────────────────────▼─────────────────────────────┐
- │                Hardware & Policy Engine                   │
- └─────────────────────────────┬─────────────────────────────┘
-                               │
- ┌─────────────────────────────▼─────────────────────────────┐
- │               4-Layer Safety Shield Core                  │
- │  ├─ 1. WMI System Restore Point (WINFORGE_SESSION_ID)      │
- │  ├─ 2. Atomic Registry Export (.reg) + Hive Normalization │
- │  ├─ 3. Pre-State System Snapshot (.json)                  │
- │  └─ 4. Atomic Transaction Ledger (rollback.json)          │
- └─────────────────────────────┬─────────────────────────────┘
-                               │
- ┌─────────────────────────────▼─────────────────────────────┐
- │                 System Mutation Handlers                  │
- └───────────────────────────────────────────────────────────┘
-```
-
-### Safety Guarantees
-1. **Single Restore Point**: Exactly **ONE** WMI System Restore Point is created per session.
-2. **Registry Hive Normalization**: Shorthand or missing hive prefixes (`SOFTWARE\...`) are normalized to standard formats (`HKLM\SOFTWARE\...`) before `.reg` exports.
-3. **Immutable Kernels**: Core Windows services (`RpcSs`, `DcomLaunch`, `EventLog`, `PlugPlay`, `CryptSvc`, `WinDefend`, `LsaSrv`) are hard-coded as immutable and will never be modified.
-4. **LIFO Rollback Engine**: Reverts applied actions in reverse chronological order if any tweak fails state verification.
+*WinForge CLI running in interactive Client Mode featuring Rich terminal dashboards, health scores, hardware tables, and safety status indicators.*
 
 ---
 
-## 4. Installation & Deployment
+## Installation & Deployment
 
-### Option A: Portable Standalone Executable (Recommended for IT Technicians)
-1. Download the latest `WinForge.exe` from [GitHub Releases](https://github.com/0xdowz/winforge/releases).
-2. Run `WinForge.exe` directly from PowerShell, Command Prompt, or Terminal. No installation or Python environment required.
+### Portable Standalone Executable (Recommended)
+1. Download `WinForge.exe` from [GitHub Releases](https://github.com/0xdowz/winforge/releases).
+2. Right-click and **Run as Administrator** (or execute directly from an elevated terminal).
 
-### Option B: Developer Setup from Source Code
-```bash
-# 1. Clone repository
+### Developer Installation from Source
+```cmd
+:: 1. Clone repository
 git clone https://github.com/0xdowz/winforge.git
 cd winforge
 
-# 2. Create virtual environment
+:: 2. Create virtual environment
 python -m venv .venv
 .venv\Scripts\activate
 
-# 3. Install in editable developer mode
+:: 3. Install in editable mode
 pip install -e .
 
-# 4. Run test suite
+:: 4. Run test suite
 python -m pytest tests/ -vv
 
-# 5. Build portable binary
+:: 5. Build portable binary
 python build.py
 ```
 
 ---
 
-## 5. CLI Command Reference
+## CLI Command Reference
 
 | Command | Description | Privilege Level |
 | :--- | :--- | :---: |
-| `winforge info` | Displays version, author, loaded tweak counts, and privacy guarantees. | User |
-| `winforge analyze` | Runs a non-interactive diagnostic scan and exports `system_report.json`. | User |
-| `winforge security-check` | Performs a security health audit (Defender, Firewall, UAC, BitLocker). | User |
-| `winforge tweaks list` | Lists all verified optimization recipes with risk ratings and descriptions. | User |
-| `winforge doctor` | Checks OS compatibility, Admin status, hardware telemetry, and safety engine readiness. | User |
-| `winforge benchmark` | Runs quantitative CPU, Memory, Disk, Timer, and DNS performance benchmarks. | User |
-| `winforge dry-run` | Runs optimization simulation without applying system modifications. | User |
-| `winforge optimize` | Executes production optimizations (prompts for UAC elevation if needed). | Administrator |
-| `winforge --resume SESSION_ID` | Automatically resumes a pending optimization session after UAC elevation. | Administrator |
-| `winforge rollback list` | Lists all available session rollback transaction ledgers. | User |
+| `winforge info` | Displays version, developer attribution, loaded recipe count, and privacy guarantee. | User / Admin |
+| `winforge analyze` | Runs a non-interactive diagnostic scan and exports `system_report.json`. | User / Admin |
+| `winforge security-check` | Performs a security health audit (Defender, Firewall, UAC, BitLocker). | User / Admin |
+| `winforge tweaks list` | Lists all verified optimization recipes with risk ratings and descriptions. | User / Admin |
+| `winforge doctor` | Checks OS compatibility, Admin status, hardware telemetry, and safety readiness. | User / Admin |
+| `winforge benchmark` | Runs quantitative CPU, Memory, Disk, Timer, and DNS performance benchmarks. | User / Admin |
+| `winforge dry-run` | Runs optimization simulation without applying system modifications. | User / Admin |
+| `winforge optimize` | Executes production optimizations. | Administrator |
+| `winforge --resume SESSION_ID` | Automatically resumes a pending optimization session after elevation. | Administrator |
+| `winforge rollback list` | Lists all available session rollback transaction ledgers. | User / Admin |
 | `winforge rollback SESSION_ID` | Reverts all system modifications recorded in the session transaction ledger. | Administrator |
 
 ---
 
-## 6. Storage & Application File Locations
+## Safety Architecture & Rollback System
 
-WinForge operates entirely locally and stores logs, session data, and reports under `%LOCALAPPDATA%\WinForge\`:
+WinForge enforces a 4-layer pre-flight safety shield prior to executing any system modification:
 
-```text
-%LOCALAPPDATA%\WinForge\
- ├─ logs\
- │   └─ runtime.log                 # Continuous application runtime execution logs
- ├─ reports\
- │   └─ system_report.json          # System health diagnostic export
- └─ sessions\
-     ├─ pending_execution.json      # Persistent execution state prior to UAC elevation
-     └─ <SESSION_ID>\
-         ├─ before.json             # Pre-optimization system telemetry snapshot
-         ├─ findings.json           # Policy engine evaluation results
-         ├─ backup.reg              # Pre-execution registry key export backup
-         ├─ rollback.json           # Atomic transaction ledger for session reversion
-         └─ report.html             # Human-readable HTML summary report
-```
+1. **WMI System Restore Point**: Creates `WinForge_SESSION_TIMESTAMP` checkpoint.
+2. **Atomic Registry Backup**: Exports targeted `.reg` backups with automatic hive normalization (`SOFTWARE\...` -> `HKLM\SOFTWARE\...`).
+3. **Pre-State System Snapshot**: Captures telemetry into `before.json`.
+4. **Atomic Transaction Ledger**: Logs exact previous and new values into `rollback.json`.
 
----
-
-## 7. Disaster Recovery & Rollback System
-
-If an optimization degrades performance or causes unexpected behavior, WinForge allows full system state reversion:
-
-```bash
-# List available rollback sessions
+### Reverting Changes
+To reverse optimizations applied in a previous session:
+```cmd
 winforge rollback list
-
-# Revert system state to before the session was applied
 winforge rollback SESSION_20260728_193000_A1B2C3
 ```
 
-The Rollback Engine reads `rollback.json` and performs inverse operations:
-- **Registry Changes**: Imports `backup.reg` to restore original registry values.
-- **Service Changes**: Restores original startup types (`sc.exe config <service> start= <original_type>`).
+---
+
+## Privacy & Security Statement
+
+- **100% Offline Local Execution**: All telemetry, reports, and backups are stored locally under `%LOCALAPPDATA%\WinForge\`.
+- **Zero Telemetry**: WinForge contains no analytics daemons, tracking scripts, or external network connections.
+- **Immutable Boundaries**: Critical Windows kernel services (`RpcSs`, `DcomLaunch`, `EventLog`, `PlugPlay`, `CryptSvc`, `WinDefend`, `LsaSrv`) are strictly immutable.
 
 ---
 
-## 8. Troubleshooting & FAQ
+## Release Information — v1.0.8
 
-#### Q: WinForge blocks execution with a "Disk Space Safety Gate" error.
-**A**: WinForge requires a minimum of **5.0 GB** free space on system drive `C:\` to safely create restore points and backups. Free up disk space on `C:\` and re-run.
-
-#### Q: Windows Defender flags WinForge.exe. Is it safe?
-**A**: WinForge is 100% open-source and free. Because WinForge modifies Windows registry keys and service start types, automated heuristic scanners may flag unsigned binaries. You can inspect the source code, verify SHA-256 checksums, or build `WinForge.exe` directly from source using `python build.py`.
-
-#### Q: Does WinForge send telemetry or connect to the cloud?
-**A**: **No.** WinForge guarantees 100% offline local execution. There are zero telemetry daemons, tracking scripts, analytics calls, or remote servers.
+- **Elevated Startup Manifest**: Built with PyInstaller `--uac-admin` (`requestedExecutionLevel="requireAdministrator"`).
+- **Embedded Multi-Resolution Icon**: `assets/icon.ico` supporting 16x16 through 256x256 resolutions.
+- **State-Persistence Resume**: Persistent pending state file handling via `%LOCALAPPDATA%\WinForge\sessions\pending_execution.json`.
+- **Disk Space Safety Gate**: 5.0 GB minimum free disk space check on drive `C:\`.
 
 ---
 
-## 9. Security & Privacy Policy
+## Contributing
 
-- **100% Offline Execution**: All telemetry, diagnostic reports, and backups remain on your local machine.
-- **MIT License**: Free and open source. You should **NEVER** pay for WinForge.
-- **Responsible Disclosure**: Please review [SECURITY.md](SECURITY.md) for security reporting guidelines.
-
----
-
-## 10. Contributing & Community
-
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on code standards, tweak submission rules, and test suite requirements.
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on code guidelines, tweak submission requirements, and testing policies.
 
 - **Developer**: [@0xdowz](https://github.com/0xdowz)
 - **License**: [MIT License](LICENSE)
