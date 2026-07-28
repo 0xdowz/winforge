@@ -93,15 +93,16 @@ class OptimizationExecutor:
         # 4. APPROVED -> BACKUP_COMPLETED (Safety Subsystem Lock)
         logger.info(f"Enforcing safety backup pre-requisites for {tweak.id}...")
 
-        # 4a. Restore Point Creation
-        rp_ok, rp_msg = create_system_restore_point(f"WINFORGE_OPT_{tweak.id}")
-        if not rp_ok and not mock_execution:
-            tracker.transition_to(TweakState.FAILED, reason=f"Backup Failure: {rp_msg}")
-            res = TweakExecutionResult(
-                tweak_id=tweak.id, name=tweak.name, category=tweak.category,
-                status=TweakStatus.FAILED, timestamp="", message=f"EXECUTION ABORTED (Restore Point Failed): {rp_msg}", dry_run=mock_execution
-            )
-            return tracker, res
+        # 4a. Restore Point Creation (Skip if session restore point is active or mock execution)
+        if not mock_execution and not getattr(session_mgr, "has_session_restore_point", False):
+            rp_ok, rp_msg = create_system_restore_point(f"WINFORGE_OPT_{tweak.id}")
+            if not rp_ok:
+                tracker.transition_to(TweakState.FAILED, reason=f"Backup Failure: {rp_msg}")
+                res = TweakExecutionResult(
+                    tweak_id=tweak.id, name=tweak.name, category=tweak.category,
+                    status=TweakStatus.FAILED, timestamp="", message=f"EXECUTION ABORTED (Restore Point Failed): {rp_msg}", dry_run=mock_execution
+                )
+                return tracker, res
 
         # 4b. Registry Backup
         if "key" in tweak.apply_method:

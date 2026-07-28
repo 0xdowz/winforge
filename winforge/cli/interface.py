@@ -121,7 +121,8 @@ class WinForgeCLI:
             console.print("  [bold yellow]Optimization wizard cancelled by user.[/bold yellow]\n")
 
     def run_profile_optimization(self, max_risk: int, profile_name: str):
-        """Executes optimizations filtered by profile risk tier."""
+        """Executes optimizations filtered by profile risk tier following 4-Phase safety architecture."""
+        # PHASE 1: Non-privileged Analysis & Optimization Plan Preview (NO ADMIN, NO RESTORE POINTS)
         render_section_header(f"{profile_name} Optimization Plan", "cyan")
         
         if not self.latest_report:
@@ -139,44 +140,61 @@ class WinForgeCLI:
 
         from winforge.cli.renderer import render_optimization_plan, render_safety_lock_status
         render_optimization_plan(filtered_tweaks, is_tech_mode=self.tech_mode)
-        render_safety_lock_status()
 
-        if Confirm.ask(f"Execute {len(filtered_tweaks)} {profile_name} optimizations now?", default=True):
-            if not self.mock_execution:
-                from winforge.core.privileges import request_elevation_if_needed
-                if not request_elevation_if_needed():
-                    return
+        # PHASE 2: User Approval Prompt
+        if not Confirm.ask(f"Execute {len(filtered_tweaks)} {profile_name} optimizations now?", default=True):
+            console.print("  [bold yellow][ABORTED] Optimization cancelled by user. Zero system modifications performed.[/bold yellow]\n")
+            return
 
-            session_mgr, _, _, _ = run_session_pipeline(dry_run=self.dry_run, run_benchmarks=False)
-            completed, successful, skipped = 0, 0, 0
-            reasons = []
+        # PHASE 3: Privilege Check (ONLY AFTER user selects Y)
+        if not self.mock_execution:
+            from winforge.core.privileges import request_elevation_if_needed
+            if not request_elevation_if_needed():
+                return
 
-            for tweak in filtered_tweaks:
-                completed += 1
-                tracker, result = self.executor.process_tweak_pipeline(
-                    tweak=tweak,
-                    report=self.latest_report,
-                    session_mgr=session_mgr,
-                    is_tech_mode=self.tech_mode,
-                    user_approved=True,
-                    mock_execution=self.mock_execution
-                )
-                if "Policy Blocked" in result.message or "SKIPPED" in result.status.value:
-                    skipped += 1
-                    reasons.append(f"{tweak.id}: {result.message}")
-                else:
-                    successful += 1
+        # PHASE 4: Elevated Execution & Pre-flight Safety Locks Setup
+        from winforge.safety.transaction import SafetyTransactionManager
+        session_mgr, _, _, _ = run_session_pipeline(dry_run=self.dry_run, run_benchmarks=False)
 
-            render_execution_report(
-                session_id=session_mgr.session_id,
-                completed_count=completed,
-                total_count=len(filtered_tweaks),
-                successful_count=successful,
-                skipped_count=skipped,
-                skipped_reasons=reasons,
-                storage_recovered_gb=2.4 if successful > 0 else 0.0,
-                performance_gain_pct=15.0 if successful > 0 else 0.0
+        stm = SafetyTransactionManager(session_id=session_mgr.session_id, session_dir=session_mgr.session_dir, mock_mode=self.mock_execution)
+        preflight = stm.execute_preflight_safety()
+        setattr(session_mgr, "has_session_restore_point", preflight.get("restore_point", False))
+
+        render_safety_lock_status(
+            restore_point_ready=preflight.get("restore_point", True),
+            registry_backup_ready=preflight.get("registry_backup", True),
+            snapshot_ready=preflight.get("snapshot", True)
+        )
+
+        completed, successful, skipped = 0, 0, 0
+        reasons = []
+
+        for tweak in filtered_tweaks:
+            completed += 1
+            tracker, result = self.executor.process_tweak_pipeline(
+                tweak=tweak,
+                report=self.latest_report,
+                session_mgr=session_mgr,
+                is_tech_mode=self.tech_mode,
+                user_approved=True,
+                mock_execution=self.mock_execution
             )
+            if "Policy Blocked" in result.message or "SKIPPED" in result.status.value:
+                skipped += 1
+                reasons.append(f"{tweak.id}: {result.message}")
+            else:
+                successful += 1
+
+        render_execution_report(
+            session_id=session_mgr.session_id,
+            completed_count=completed,
+            total_count=len(filtered_tweaks),
+            successful_count=successful,
+            skipped_count=skipped,
+            skipped_reasons=reasons,
+            storage_recovered_gb=2.4 if successful > 0 else 0.0,
+            performance_gain_pct=15.0 if successful > 0 else 0.0
+        )
 
     def handle_scan(self):
         """Execute full system scan and render dashboard."""
