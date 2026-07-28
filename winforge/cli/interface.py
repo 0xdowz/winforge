@@ -23,7 +23,7 @@ logger = logging.getLogger("winforge")
 
 
 class WinForgeCLI:
-    def __init__(self, tech_mode: bool = False, dry_run: bool = True, mock_execution: bool = True):
+    def __init__(self, tech_mode: bool = False, dry_run: bool = False, mock_execution: bool = False):
         self.tech_mode = tech_mode
         self.dry_run = dry_run
         self.mock_execution = mock_execution

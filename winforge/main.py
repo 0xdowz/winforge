@@ -142,7 +142,7 @@ def main():
 
     # Subcommand 5: Welcome Journey
     if is_welcome:
-        app = WinForgeCLI(tech_mode=is_tech, dry_run=True, mock_execution=True)
+        app = WinForgeCLI(tech_mode=is_tech, dry_run=is_dry_run, mock_execution=is_dry_run)
         app.handle_welcome()
         sys.exit(0)
 
@@ -234,7 +234,7 @@ def main():
         sys.exit(0)
 
     # Default Interactive Launch -> Run Welcome Journey
-    app = WinForgeCLI(tech_mode=is_tech, dry_run=True, mock_execution=True)
+    app = WinForgeCLI(tech_mode=is_tech, dry_run=is_dry_run, mock_execution=is_dry_run)
     app.handle_welcome()
 
 
