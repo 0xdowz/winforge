@@ -127,6 +127,27 @@ def test_atomic_rollback_on_tweak_failure(tmp_path):
     assert len(logs) == 1
 
 
+def test_resume_optimization_without_import_error(tmp_path):
+    """Verify render_execution_report import and resume_optimization execution without ImportError."""
+    from winforge.cli.renderer import render_execution_report
+    assert callable(render_execution_report)
+
+    app = WinForgeCLI(tech_mode=False, dry_run=True, mock_execution=True)
+    state = {
+        "session_id": "TEST_SESSION_RESUME_001",
+        "created_at": "2026-07-28T20:00:00.000000",
+        "mode": "BEGINNER",
+        "max_risk": 20,
+        "selected_tweaks": ["TWEAK_GAME_001"],
+        "execute": True,
+        "dry_run": True,
+        "tech_mode": False,
+        "resume_required": True
+    }
+    with patch("winforge.core.session.get_app_dir", return_value=tmp_path):
+        app.resume_optimization(state)
+
+
 def import_json_str(data):
     import json
     return json.dumps(data)

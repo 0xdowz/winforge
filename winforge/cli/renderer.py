@@ -1,6 +1,6 @@
 """
 WinForge CLI Renderer — Modern Terminal Presentation Layer.
-Provides structured visual rendering for Optimization Plans, Safety Locks, Doctor Diagnostics, and Actionable Errors.
+Provides structured visual rendering for Optimization Plans, Safety Locks, Execution Reports, Doctor Diagnostics, and Actionable Errors.
 """
 
 from typing import List, Optional
@@ -38,6 +38,34 @@ def render_safety_lock_status(restore_point_ready: bool = True, registry_backup_
     console.print(f"   {b_icon} Atomic Registry State:        [bold green]CAPTURED[/bold green]")
     console.print(f"   {s_icon} Pre-State Snapshot:           [bold green]SAVED[/bold green]")
     console.print(f"   {ok_icon} Transaction Ledger (.json):   [bold green]LOGGED[/bold green]\n")
+
+
+def render_execution_report(
+    session_id: str,
+    completed_count: int,
+    total_count: int,
+    successful_count: int,
+    skipped_count: int,
+    skipped_reasons: list,
+    storage_recovered_gb: float = 0.0,
+    performance_gain_pct: float = 0.0
+):
+    """Renders structured post-optimization Execution Report."""
+    render_section_header("Execution Report", "cyan")
+
+    console.print(f"  [bold white]Session ID:[/bold white]               [bold cyan]{session_id}[/bold cyan]")
+    console.print(f"  [bold white]Completed:[/bold white]                [bold white]{completed_count}/{total_count}[/bold white]")
+    console.print(f"  [bold white]Successful:[/bold white]               [bold green]{successful_count}[/bold green]")
+    console.print(f"  [bold white]Skipped:[/bold white]                  [bold yellow]{skipped_count}[/bold yellow]\n")
+
+    if skipped_reasons:
+        console.print("  [bold white]Skipped Reasons:[/bold white]")
+        for reason in skipped_reasons:
+            console.print(f"   • [dim white]{reason}[/dim white]")
+        console.print()
+
+    console.print(f"  [bold white]Estimated Storage Recovered:[/bold white] [bold green]{storage_recovered_gb:.1f} GB[/bold green]")
+    console.print(f"  [bold white]Estimated Performance Gain:[/bold white]  [bold green]{performance_gain_pct:.1f}%[/bold green]\n")
 
 
 def render_actionable_error(title: str, reason: str, suggested_action: str):

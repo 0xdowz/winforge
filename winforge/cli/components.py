@@ -141,34 +141,7 @@ def render_dry_run_summary(session_mgr, report, sim_res):
     console.print(f"   • HTML Report: [green]{format_short_path(session_mgr.get_report_html_path())}[/green]\n")
 
 
-def render_execution_report(
-    session_id: str,
-    completed_count: int,
-    total_count: int,
-    successful_count: int,
-    skipped_count: int,
-    skipped_reasons: list,
-    storage_recovered_gb: float = 2.4,
-    performance_gain_pct: float = 15.0
-):
-    """Renders human-readable commercial post-optimization execution report with Before/After metrics."""
-    render_section_header("BEFORE / AFTER PERFORMANCE REPORT", "green")
-
-    console.print("  [bold white]Before Optimization:[/bold white]")
-    console.print("   • CPU Health Score:       [bold yellow]80.8 / 100[/bold yellow]")
-    console.print("   • DNS Latency:            [dim white]35 ms[/dim white]")
-    console.print("   • Startup Items:          [bold yellow]14 Active Items[/bold yellow]\n")
-
-    console.print("  [bold white]After Optimization:[/bold white]")
-    console.print("   • CPU Health Score:       [bold green]95.8 / 100[/bold green]")
-    console.print("   • DNS Latency:            [bold green]18 ms[/bold green]")
-    console.print("   • Startup Items:          [bold green]6 Essential Items[/bold green]\n")
-
-    console.print("  [bold white]Estimated Improvement:[/bold white]")
-    console.print(f"   • Storage Recovered:      [bold green]+{storage_recovered_gb:.1f} GB[/bold green]")
-    console.print(f"   • Overall Health Gain:    [bold green]+{performance_gain_pct:.1f}% score increase[/bold green]")
-    console.print("   • Rollback Status:        [bold green]Available (Transaction Ledger Recorded)[/bold green]")
-    console.print(f"   • Session ID:             [bold cyan]{session_id}[/bold cyan]\n")
+from winforge.cli.renderer import render_execution_report
 
 
 def render_tweak_inspection_card(tweak: Tweak):

@@ -2,8 +2,7 @@ from rich.console import Console
 from winforge.cli.theme import CONSOLE_WIDTH, render_section_header, format_short_path, RendererManager
 from winforge.cli.banner import render_welcome_banner, render_banner
 from winforge.cli.wizard import OptimizationWizard
-from winforge.cli.renderer import render_optimization_plan, render_safety_lock_status, render_actionable_error, render_doctor_report
-from winforge.cli.components import render_execution_report
+from winforge.cli.renderer import render_optimization_plan, render_safety_lock_status, render_actionable_error, render_doctor_report, render_execution_report
 from winforge.cli.themes import ThemeManager
 from winforge.cli.formatting import format_status_badge, format_risk_badge
 from winforge.cli.progress import StepTracker
