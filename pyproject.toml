@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "winforge"
-version = "1.0.7"
+version = "1.0.8"
 description = "WINFORGE :: Free Open-Source Windows System Optimization CLI Framework"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
     { name = "0xdowz" }

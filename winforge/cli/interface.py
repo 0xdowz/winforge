@@ -10,7 +10,7 @@ from winforge.cli.components import (
     render_execution_report
 )
 from winforge.cli.wizard import wizard
-from winforge.cli.theme import renderer, console, render_section_header
+from winforge.cli.theme import renderer, console, render_section_header, prompt_pause_if_interactive
 from winforge.analyzers.hardware_profile import hardware_engine
 from winforge.core.engine import run_full_system_scan, run_session_pipeline, export_system_report
 from winforge.core.tweak_loader import load_tier1_tweaks
@@ -199,15 +199,20 @@ class WinForgeCLI:
             performance_gain_pct=15.0 if successful > 0 else 0.0
         )
 
-    def resume_optimization(self, state: Dict[str, Any]):
-        """Resumes a pending optimization session automatically after Administrator elevation."""
-        session_id = state.get("session_id")
+    def resume_optimization(self, state: Dict[str, Any]) -> int:
+        """
+        Resumes a pending optimization session automatically after Administrator elevation.
+        Returns an explicit exit code (0 for success, non-zero for safety gate block or error).
+        """
+        session_id = state.get("session_id", "UNKNOWN")
         max_risk = state.get("max_risk", 20)
         mode_str = state.get("mode", "BEGINNER")
         profile_name = f"{mode_str} Mode"
         self.tech_mode = state.get("tech_mode", False)
         selected_ids = state.get("selected_tweaks", [])
-        
+
+        logger.info(f"[RESUME START] Resuming session {session_id} (Mode: {mode_str}, MaxRisk: {max_risk}, SelectedTweaks: {len(selected_ids)})")
+
         console.print(f"\n[RESUME]")
         console.print(f"Loaded session:       {session_id}")
         console.print(f"Pending tweaks count: {len(selected_ids)}")
@@ -215,66 +220,81 @@ class WinForgeCLI:
 
         render_section_header(f"Resuming {profile_name} Execution", "green")
 
-        if not self.latest_report:
-            self.latest_report = run_full_system_scan()
+        try:
+            if not self.latest_report:
+                self.latest_report = run_full_system_scan()
 
-        all_candidate_tweaks = self.executor.dispatcher.detect_all_candidate_tweaks(self.latest_report)
-        filtered_tweaks = [t for t in all_candidate_tweaks if t.risk_score <= max_risk]
-        if selected_ids:
-            filtered_tweaks = [t for t in filtered_tweaks if t.id in selected_ids]
+            all_candidate_tweaks = self.executor.dispatcher.detect_all_candidate_tweaks(self.latest_report)
+            filtered_tweaks = [t for t in all_candidate_tweaks if t.risk_score <= max_risk]
+            if selected_ids:
+                filtered_tweaks = [t for t in filtered_tweaks if t.id in selected_ids]
 
-        from winforge.core.session import SessionManager, clear_pending_execution
-        from winforge.safety.transaction import SafetyTransactionManager
-        from winforge.cli.renderer import render_safety_lock_status, render_execution_report
+            from winforge.core.session import SessionManager, clear_pending_execution
+            from winforge.safety.transaction import SafetyTransactionManager
+            from winforge.cli.renderer import render_safety_lock_status, render_execution_report
 
-        session_mgr = SessionManager(session_id=session_id)
-        stm = SafetyTransactionManager(session_id=session_mgr.session_id, session_dir=session_mgr.session_dir, mock_mode=self.mock_execution)
-        preflight = stm.execute_preflight_safety()
+            session_mgr = SessionManager(session_id=session_id)
+            stm = SafetyTransactionManager(session_id=session_mgr.session_id, session_dir=session_mgr.session_dir, mock_mode=self.mock_execution)
+            preflight = stm.execute_preflight_safety()
 
-        if preflight.get("error"):
-            console.print(f"\n[bold red][SAFETY GATE BLOCKED] {preflight['error']}[/bold red]\n")
-            clear_pending_execution()
-            return
+            if preflight.get("error"):
+                logger.error(f"[RESUME SAFETY GATE BLOCKED] Session {session_id}: {preflight['error']}")
+                console.print(f"\n[bold red][SAFETY GATE BLOCKED] Optimization session halted safely.[/bold red]")
+                console.print(f" Reason: {preflight['error']}\n")
+                clear_pending_execution()
+                prompt_pause_if_interactive("Press Enter to exit")
+                return 5
 
-        setattr(session_mgr, "has_session_restore_point", preflight.get("restore_point", False))
+            setattr(session_mgr, "has_session_restore_point", preflight.get("restore_point", False))
 
-        render_safety_lock_status(
-            restore_point_ready=preflight.get("restore_point", True),
-            registry_backup_ready=preflight.get("registry_backup", True),
-            snapshot_ready=preflight.get("snapshot", True)
-        )
-
-        completed, successful, skipped = 0, 0, 0
-        reasons = []
-
-        for tweak in filtered_tweaks:
-            completed += 1
-            tracker, result = self.executor.process_tweak_pipeline(
-                tweak=tweak,
-                report=self.latest_report,
-                session_mgr=session_mgr,
-                is_tech_mode=self.tech_mode,
-                user_approved=True,
-                mock_execution=self.mock_execution
+            render_safety_lock_status(
+                restore_point_ready=preflight.get("restore_point", True),
+                registry_backup_ready=preflight.get("registry_backup", True),
+                snapshot_ready=preflight.get("snapshot", True)
             )
-            if "Policy Blocked" in result.message or "SKIPPED" in result.status.value:
-                skipped += 1
-                reasons.append(f"{tweak.id}: {result.message}")
-            else:
-                successful += 1
 
-        render_execution_report(
-            session_id=session_mgr.session_id,
-            completed_count=completed,
-            total_count=len(filtered_tweaks),
-            successful_count=successful,
-            skipped_count=skipped,
-            skipped_reasons=reasons,
-            storage_recovered_gb=2.4 if successful > 0 else 0.0,
-            performance_gain_pct=15.0 if successful > 0 else 0.0
-        )
+            completed, successful, skipped = 0, 0, 0
+            reasons = []
 
-        clear_pending_execution()
+            for tweak in filtered_tweaks:
+                completed += 1
+                tracker, result = self.executor.process_tweak_pipeline(
+                    tweak=tweak,
+                    report=self.latest_report,
+                    session_mgr=session_mgr,
+                    is_tech_mode=self.tech_mode,
+                    user_approved=True,
+                    mock_execution=self.mock_execution
+                )
+                if "Policy Blocked" in result.message or "SKIPPED" in result.status.value:
+                    skipped += 1
+                    reasons.append(f"{tweak.id}: {result.message}")
+                else:
+                    successful += 1
+
+            render_execution_report(
+                session_id=session_mgr.session_id,
+                completed_count=completed,
+                total_count=len(filtered_tweaks),
+                successful_count=successful,
+                skipped_count=skipped,
+                skipped_reasons=reasons,
+                storage_recovered_gb=2.4 if successful > 0 else 0.0,
+                performance_gain_pct=15.0 if successful > 0 else 0.0
+            )
+
+            clear_pending_execution()
+            logger.info(f"[RESUME SUCCESS] Session {session_id} completed cleanly.")
+            prompt_pause_if_interactive("Press Enter to return")
+            return 0
+
+        except Exception as e:
+            logger.error(f"[RESUME EXCEPTION] Session {session_id} encountered an error: {e}", exc_info=True)
+            console.print(f"\n[bold red][RESUME ERROR] Optimization session failed:[/bold red] {e}\n")
+            from winforge.core.session import clear_pending_execution
+            clear_pending_execution()
+            prompt_pause_if_interactive("Press Enter to exit")
+            return 1
 
     def handle_scan(self):
         """Execute full system scan and render dashboard."""

@@ -42,7 +42,7 @@ class RendererManager:
             self.width = min(override_width, 90)
         else:
             self.width = CONSOLE_WIDTH
-        
+
         self.console = Console(width=self.width)
 
     def print(self, *args, **kwargs):
@@ -68,6 +68,24 @@ class RendererManager:
         if len(parts) > 3:
             return f"...\\{os.path.join(*parts[-3:])}"
         return p_str
+
+
+def prompt_pause_if_interactive(message: str = "Press Enter to exit"):
+    """
+    Pauses terminal execution if running in an interactive console session or frozen executable.
+    Does NOT block automated execution, headless mode, or pytest test runs.
+    """
+    import sys
+    if os.environ.get("PYTEST_CURRENT_TEST") or os.environ.get("WINFORGE_NON_INTERACTIVE"):
+        return
+    is_tty = sys.stdin and hasattr(sys.stdin, "isatty") and sys.stdin.isatty()
+    is_frozen = getattr(sys, "frozen", False)
+    if is_tty or is_frozen:
+        try:
+            print()
+            input(f"{message}...")
+        except Exception:
+            pass
 
 
 # Singleton instance shared across CLI components

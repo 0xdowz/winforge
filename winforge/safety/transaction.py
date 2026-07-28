@@ -98,7 +98,12 @@ class SafetyTransactionManager(TransactionManager):
             drives = get_storage_drives()
             sys_drive = next((d for d in drives if "C" in d.drive_letter.upper()), drives[0] if drives else None)
             if sys_drive and sys_drive.free_gb < 5.0:
-                err_msg = f"CRITICAL: System drive ({sys_drive.drive_letter}) has insufficient free space ({sys_drive.free_gb:.2f} GB free < 5.0 GB required). Optimization cancelled safely."
+                err_msg = (
+                    f"CRITICAL: System drive ({sys_drive.drive_letter}) has insufficient free space "
+                    f"({sys_drive.free_gb:.2f} GB free < 5.0 GB required). "
+                    f"Windows Restore Point creation & System Registry backups require at least 5.0 GB free disk space. "
+                    f"Optimization cancelled safely to prevent system drive exhaustion."
+                )
                 logger.error(err_msg)
                 return {
                     "restore_point": False,

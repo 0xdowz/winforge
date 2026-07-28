@@ -34,10 +34,15 @@ def require_admin() -> bool:
     return admin_status
 
 
+from pathlib import Path
+from winforge.utils.paths import get_executable_dir
+
+
 def relaunch_as_admin(custom_args: Optional[List[str]] = None) -> bool:
     """
     Relaunches the current WinForge binary or script with elevated Administrator privileges
     using Windows ShellExecuteW(runas) while preserving command arguments and profile choices.
+    Resolves absolute executable and working directory paths to avoid CWD dependencies.
     """
     if sys.platform != "win32":
         logger.info("Non-Windows platform detected; skipping ShellExecuteW elevation.")
@@ -46,15 +51,17 @@ def relaunch_as_admin(custom_args: Optional[List[str]] = None) -> bool:
     args_list = custom_args if custom_args is not None else sys.argv[1:]
 
     is_frozen = getattr(sys, "frozen", False)
+    working_dir = str(get_executable_dir().resolve())
+
     if is_frozen:
-        executable = sys.executable
+        executable = str(Path(sys.executable).resolve())
         params = " ".join([f'"{arg}"' for arg in args_list])
     else:
-        executable = sys.executable
-        main_script = sys.argv[0]
+        executable = str(Path(sys.executable).resolve())
+        main_script = str(Path(sys.argv[0]).resolve())
         params = f'"{main_script}" ' + " ".join([f'"{arg}"' for arg in args_list])
 
-    logger.info(f"Relaunching elevated process: {executable} {params}")
+    logger.info(f"Relaunching elevated process: executable='{executable}', params='{params}', cwd='{working_dir}'")
 
     try:
         ret = ctypes.windll.shell32.ShellExecuteW(
@@ -62,13 +69,16 @@ def relaunch_as_admin(custom_args: Optional[List[str]] = None) -> bool:
             "runas",
             executable,
             params,
-            None,
+            working_dir,  # Explicit absolute working directory
             1  # SW_SHOWNORMAL
         )
         # ShellExecuteW returns > 32 on success
-        return ret > 32
+        success = ret > 32
+        if not success:
+            logger.error(f"ShellExecuteW elevation failed with Win32 return code: {ret}")
+        return success
     except Exception as e:
-        logger.error(f"Failed to trigger UAC elevation: {e}")
+        logger.error(f"Failed to trigger UAC elevation: {e}", exc_info=True)
         return False
 
 
@@ -105,9 +115,9 @@ def request_elevation_if_needed(session_id: Optional[str] = None, mode: str = "B
             tech_mode=tech_mode
         )
         resume_args = ["--resume", cur_session]
-        
+
         is_frozen = getattr(sys, "frozen", False)
-        exe_path = sys.executable if is_frozen else f"{sys.executable} {sys.argv[0]}"
+        exe_path = str(Path(sys.executable).resolve()) if is_frozen else f'"{sys.executable}" "{Path(sys.argv[0]).resolve()}"'
         cmd_str = f"{exe_path} --resume {cur_session}"
 
         console.print(f"\n[ELEVATION]")

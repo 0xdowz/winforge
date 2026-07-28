@@ -145,7 +145,37 @@ def test_resume_optimization_without_import_error(tmp_path):
         "resume_required": True
     }
     with patch("winforge.core.session.get_app_dir", return_value=tmp_path):
-        app.resume_optimization(state)
+        code = app.resume_optimization(state)
+        assert code == 0
+
+
+def test_resume_optimization_safety_gate_blocking_exit_code(tmp_path):
+    """Verify resume_optimization returns exit code 5 when safety gate blocks."""
+    app = WinForgeCLI(tech_mode=False, dry_run=False, mock_execution=False)
+    state = {
+        "session_id": "TEST_SESSION_BLOCK_001",
+        "mode": "BEGINNER",
+        "max_risk": 20,
+        "selected_tweaks": ["TWEAK_GAME_001"]
+    }
+    mock_low_drive = MagicMock(drive_letter="C:\\", free_gb=1.5)
+    with patch("winforge.safety.transaction.get_storage_drives", return_value=[mock_low_drive]), \
+         patch("winforge.core.session.get_app_dir", return_value=tmp_path):
+        code = app.resume_optimization(state)
+        assert code == 5
+
+
+def test_relaunch_as_admin_cwd_resolution():
+    """Verify relaunch_as_admin specifies non-null working directory and absolute script path."""
+    with patch("ctypes.windll.shell32.ShellExecuteW", return_value=42) as mock_shell, \
+         patch("sys.platform", "win32"):
+        res = relaunch_as_admin(["--resume", "TEST_SESSION"])
+        assert res is True
+        assert mock_shell.called
+        call_args = mock_shell.call_args[0]
+        # call_args: (hwnd, operation, file, parameters, directory, show)
+        assert call_args[1] == "runas"
+        assert Path(call_args[4]).is_absolute()  # directory parameter is absolute CWD
 
 
 def import_json_str(data):

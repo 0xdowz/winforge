@@ -70,7 +70,8 @@ def main():
 
     # Elevated Resume Dispatch
     if args.resume:
-        from winforge.core.session import load_pending_execution
+        from winforge.core.session import load_pending_execution, get_pending_execution_path
+        from winforge.cli.theme import prompt_pause_if_interactive
         pending_state = load_pending_execution()
         if pending_state:
             app = WinForgeCLI(
@@ -78,10 +79,15 @@ def main():
                 dry_run=pending_state.get("dry_run", False),
                 mock_execution=pending_state.get("dry_run", False)
             )
-            app.resume_optimization(pending_state)
-            sys.exit(0)
+            code = app.resume_optimization(pending_state)
+            sys.exit(code)
         else:
-            console.print(f"[bold yellow][RESUME WARNING] Pending state not found for session {args.resume}. Continuing...[/bold yellow]")
+            state_path = get_pending_execution_path()
+            logger.error(f"[RESUME ERROR] Pending execution state file not found for session '{args.resume}' at expected path: {state_path}")
+            console.print(f"\n[bold red][RESUME ERROR] Execution state file not found for session '{args.resume}'.[/bold red]")
+            console.print(f" [dim white]Expected path: {state_path}[/dim white]\n")
+            prompt_pause_if_interactive("Press Enter to exit")
+            sys.exit(4)
 
     # Checksum Verification Check
     valid_checksums, integrity_warnings = verify_tweak_checksums()
@@ -277,13 +283,8 @@ def safe_entrypoint():
         print(" Possible Cause: Unhandled runtime exception or resource initialization failure.")
         print("==================================================\n")
 
-        # Pause if running in interactive terminal or double-clicked executable
-        if getattr(sys, "frozen", False) or sys.stdin.isatty():
-            try:
-                input("Press Enter to exit...")
-            except Exception:
-                pass
-
+        from winforge.cli.theme import prompt_pause_if_interactive
+        prompt_pause_if_interactive("Press Enter to exit")
         sys.exit(1)
 
 
