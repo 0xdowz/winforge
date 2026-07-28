@@ -4,8 +4,8 @@
 
 | Version | Supported |
 | :--- | :---: |
-| 1.0.x (latest) | ✅ Yes |
-| < 1.0.0 | ❌ No |
+| 1.0.8 (latest) | ✅ Yes |
+| < 1.0.8 | ❌ No |
 
 ---
 
@@ -60,9 +60,10 @@ We follow a **90-day coordinated disclosure window**. If a fix cannot be deliver
 
 1. **Non-Destructive Defaults**: All internal Registry and Service modification handlers run in safe mock/simulation mode unless explicitly overridden with `--execute`.
 2. **Immutable Protected Boundaries**: Critical Windows kernel services (`RpcSs`, `DcomLaunch`, `EventLog`, `PlugPlay`, `CryptSvc`, `Dhcp`, `Dnscache`, `LsaSrv`, `WinDefend`, `wuauserv`) and system directories (`C:\Windows\System32`, `SysWOW64`, `Drivers`) are strictly immutable.
-3. **Automatic Pre-Flight Check**: Execution halts automatically if free disk space is < 2.0 GB, laptop battery is < 20%, or Administrator privileges are missing.
-4. **4-Layer Safety Lock**: Automatic WMI System Restore Point creation, targeted `.reg` backups, pre-state JSON snapshots, and atomic transaction ledgers precede any system mutation.
-5. **No Telemetry**: WinForge contains no telemetry daemons, tracking scripts, analytics hooks, or cloud communication of any kind.
+3. **Automatic Pre-Flight Check**: Execution halts automatically if free disk space is < 5.0 GB, laptop battery is < 20%, or Administrator privileges are missing.
+4. **4-Layer Safety Lock**: Automatic WMI System Restore Point creation, targeted `.reg` backups with hive normalization, pre-state JSON snapshots, and atomic transaction ledgers precede any system mutation.
+5. **State-Persistence Elevation Resume**: `--resume SESSION_ID` allows elevated UAC processes to resume execution without re-prompting or losing profile state.
+6. **No Telemetry**: WinForge contains no telemetry daemons, tracking scripts, analytics hooks, or cloud communication of any kind.
 
 ---
 

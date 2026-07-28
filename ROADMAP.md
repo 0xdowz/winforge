@@ -4,16 +4,21 @@ This document outlines the architectural roadmap, planned features, and release 
 
 ---
 
-## 🟢 Version 1.0.0 — Initial Stable Release (Current)
+## 🟢 Version 1.0.8 — Current Stable Release
 
 - [x] **Diagnostic Telemetry Engine**: WMI and Win32 hardware inspection (CPU, GPU, RAM, Storage, Power Plan).
+- [x] **Hardware Intelligence Engine v2**: Auto-detects hardware profile recommendations with confidence scoring.
+- [x] **State-Persistence Elevation Resume System (`--resume SESSION_ID`)**: Persists state to `pending_execution.json` prior to elevation and auto-resumes after UAC launch.
+- [x] **Disk Space Safety Gate (>= 5.0 GB)**: Enforces a strict 5.0 GB minimum free disk space safety check on system drive `C:\`.
+- [x] **Centralized Tweak Schema Validation**: Auto-injects safe defaults for missing metadata (`"No rationale provided"`).
+- [x] **Registry Hive Path Normalization**: Auto-prefixes shorthand key paths (`SOFTWARE\...` -> `HKLM\SOFTWARE\...`).
+- [x] **Multi-Resolution Embedded Icon**: Integrates custom multi-resolution RGBA icon (`assets/icon.ico`) into `WinForge.exe`.
 - [x] **WinForge System Health Score (0–100)**: Internal health metrics based on system degradation parameters.
 - [x] **4-Layer Safety Subsystem Lock**: Windows Restore Points, targeted `.reg` exports, state JSON snapshots, and atomic transaction ledgers.
-- [x] **Automated LIFO Rollback Engine**: One-click restoration of applied system tweaks.
+- [x] **Automated LIFO Rollback Engine**: One-click restoration of applied system tweaks (`winforge rollback SESSION_ID`).
 - [x] **Quantitative Micro-Benchmarks**: CPU latency, RAM throughput, disk sequential write speed, timer resolution, and DNS performance.
-- [x] **Risk Score Intelligence**: Categorization of tweaks (`SAFE`, `MODERATE`, `ADVANCED`, `TECHNICIAN`) with risk weighting.
+- [x] **Security & Hygiene Health Module (`winforge security-check`)**: Audits Windows Defender, Firewall, UAC, BitLocker, Windows Update, and Admin privileges.
 - [x] **Technician Inspection Mode (`--tech`)**: Granular terminal inspection cards for manual confirmation.
-- [x] **Configuration Integrity Engine**: SHA-256 integrity hash verification (`config/checksums.json`).
 - [x] **Standalone Portable Binary**: PyInstaller single-file build (`WinForge.exe`, ~38.8 MB).
 
 ---
