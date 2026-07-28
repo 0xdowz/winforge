@@ -3,6 +3,13 @@ import sys
 from pathlib import Path
 
 
+def get_executable_dir() -> Path:
+    """Returns absolute stable path to executable parent directory or project root."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent.parent.parent
+
+
 def get_app_dir() -> Path:
     """Returns local application directory for WinForge logs, sessions, and configuration."""
     if sys.platform == "win32":
@@ -10,7 +17,7 @@ def get_app_dir() -> Path:
     else:
         base = Path.home() / ".config"
 
-    app_dir = base / "WinForge"
+    app_dir = (base / "WinForge").resolve()
     app_dir.mkdir(parents=True, exist_ok=True)
     return app_dir
 
@@ -32,7 +39,7 @@ def get_reports_dir() -> Path:
 def get_bundle_dir() -> Path:
     """Returns path to application bundle root directory (supports PyInstaller frozen binary)."""
     if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
-        return Path(sys._MEIPASS)
+        return Path(sys._MEIPASS).resolve()
     return Path(__file__).resolve().parent.parent.parent
 
 

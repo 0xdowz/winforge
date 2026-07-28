@@ -21,7 +21,7 @@ class SafetyApprovalEngine:
     """Evaluates real-time system safety conditions before allowing modification execution."""
 
     def evaluate_realtime_safety(self, mock: bool = False) -> SafetyApprovalResult:
-        """Runs pre-flight safety checks (Elevation, Disk Space, Battery, System Restore)."""
+        """Runs pre-flight safety checks (Elevation, Disk Space >= 5.0GB, Battery, System Restore)."""
         logger.info(f"Executing real-time safety approval pre-flight checks (mock={mock})...")
         if mock:
             return SafetyApprovalResult(
@@ -44,13 +44,13 @@ class SafetyApprovalEngine:
         if not admin_ok:
             failure_reasons.append("Application is running without Administrator elevation.")
 
-        # 2. System Free Disk Space Check (Requires >= 2.0 GB free on system drive C:)
+        # 2. System Free Disk Space Check (Requires >= 5.0 GB free on system drive C:)
         drives = get_storage_drives()
         sys_drive = next((d for d in drives if "C" in d.drive_letter.upper()), drives[0] if drives else None)
-        disk_ok = bool(sys_drive and sys_drive.free_gb >= 2.0)
+        disk_ok = bool(sys_drive and sys_drive.free_gb >= 5.0)
         checks["sufficient_disk_space"] = disk_ok
         if sys_drive and not disk_ok:
-            failure_reasons.append(f"Insufficient free disk space on drive {sys_drive.drive_letter} ({sys_drive.free_gb} GB free < 2.0 GB required).")
+            failure_reasons.append(f"CRITICAL: System drive ({sys_drive.drive_letter}) has insufficient free space ({sys_drive.free_gb:.2f} GB free < 5.0 GB required). Optimization cancelled safely.")
 
         # 3. Battery Level Check
         power = get_power_plan()

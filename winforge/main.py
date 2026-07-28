@@ -51,6 +51,7 @@ def main():
     parser.add_argument("--license-info", action="store_true", help="Display Open Source Environment Information")
     parser.add_argument("--license-check", action="store_true", help="Perform offline verification and environment check")
     parser.add_argument("--demo", action="store_true", help="Run non-interactive demo/preview mode for screenshots (read-only)")
+    parser.add_argument("--resume", type=str, help="Resume pending optimization session after Administrator elevation")
     parser.add_argument("--version", action="version", version=f"WINFORGE v{__version__} by @{__author__}")
 
     # Subcommand positional aliases
@@ -66,6 +67,21 @@ def main():
 
     # Initialize Logger
     setup_logger()
+
+    # Elevated Resume Dispatch
+    if args.resume:
+        from winforge.core.session import load_pending_execution
+        pending_state = load_pending_execution()
+        if pending_state:
+            app = WinForgeCLI(
+                tech_mode=pending_state.get("tech_mode", False),
+                dry_run=pending_state.get("dry_run", False),
+                mock_execution=pending_state.get("dry_run", False)
+            )
+            app.resume_optimization(pending_state)
+            sys.exit(0)
+        else:
+            console.print(f"[bold yellow][RESUME WARNING] Pending state not found for session {args.resume}. Continuing...[/bold yellow]")
 
     # Checksum Verification Check
     valid_checksums, integrity_warnings = verify_tweak_checksums()

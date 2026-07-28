@@ -72,16 +72,17 @@ def relaunch_as_admin(custom_args: Optional[List[str]] = None) -> bool:
         return False
 
 
-def request_elevation_if_needed(custom_args: Optional[List[str]] = None) -> bool:
+def request_elevation_if_needed(session_id: Optional[str] = None, mode: str = "BEGINNER", max_risk: int = 20, selected_tweaks: Optional[List[str]] = None, tech_mode: bool = False) -> bool:
     """
-    Checks for Administrator privileges. If non-elevated, prompts the user professionally
-    and triggers ShellExecuteW UAC elevation.
+    Checks for Administrator privileges. If non-elevated, prompts the user professionally,
+    saves persistent state, and triggers ShellExecuteW UAC elevation with --resume SESSION_ID.
     Returns True if already admin, or False if elevation was requested / cancelled.
     """
     if is_admin():
         return True
 
     from winforge.cli.theme import console, render_section_header
+    from winforge.core.session import save_pending_execution, get_pending_execution_path
 
     render_section_header("WinForge Privilege Elevation Required", "yellow")
     console.print("  [bold white]WinForge optimization requires Administrator privileges to perform:[/bold white]")
@@ -93,8 +94,29 @@ def request_elevation_if_needed(custom_args: Optional[List[str]] = None) -> bool
     choice = Prompt.ask("Select action [[bold green]Y[/bold green]] Restart as Administrator  [[bold red]N[/bold red]] Cancel", choices=["Y", "N", "y", "n"], default="Y").upper()
 
     if choice == "Y":
+        cur_session = session_id or f"SESSION_{sys.maxsize}"
+        state_file = save_pending_execution(
+            session_id=cur_session,
+            mode=mode,
+            max_risk=max_risk,
+            selected_tweaks=selected_tweaks,
+            execute=True,
+            dry_run=False,
+            tech_mode=tech_mode
+        )
+        resume_args = ["--resume", cur_session]
+        
+        is_frozen = getattr(sys, "frozen", False)
+        exe_path = sys.executable if is_frozen else f"{sys.executable} {sys.argv[0]}"
+        cmd_str = f"{exe_path} --resume {cur_session}"
+
+        console.print(f"\n[ELEVATION]")
+        console.print(f"Session:      {cur_session}")
+        console.print(f"State file:   {state_file}")
+        console.print(f"Resume cmd:   {cmd_str}\n")
         console.print("  [bold green]✓ Requesting Windows UAC Administrator Elevation...[/bold green]\n")
-        success = relaunch_as_admin(custom_args=custom_args)
+
+        success = relaunch_as_admin(custom_args=resume_args)
         if success:
             sys.exit(0)
         else:

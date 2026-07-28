@@ -4,6 +4,7 @@ Manages 7-step centralized safety lifecycle and atomic rollback ledger.
 """
 
 import logging
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Dict, Any
@@ -12,6 +13,7 @@ from winforge.models.rollback import RollbackTransaction, RollbackAction
 from winforge.safety.restore_point import create_system_restore_point
 from winforge.safety.registry_backup import export_registry_key
 from winforge.safety.snapshot import SystemSnapshotManager
+from winforge.analyzers.hardware import get_storage_drives
 
 logger = logging.getLogger("winforge")
 
@@ -59,7 +61,7 @@ class TransactionManager:
 class SafetyTransactionManager(TransactionManager):
     """
     Centralized Safety Transaction Manager executing 7-step safety session sequence:
-      1. Pre-flight safety verification
+      1. Pre-flight safety verification (Disk space >= 5.0GB gate)
       2. Create ONE system restore point (Production mode only)
       3. Create ONE atomic registry backup (Production mode only)
       4. Create ONE system snapshot
@@ -77,9 +79,10 @@ class SafetyTransactionManager(TransactionManager):
         self.registry_backup_ready = False
         self.snapshot_ready = False
 
-    def execute_preflight_safety(self) -> Dict[str, bool]:
+    def execute_preflight_safety(self) -> Dict[str, Any]:
         """
         Performs initial 4-Layer Safety Lock setup once per session.
+        Enforces 5.0 GB minimum free disk space gate on system drive.
         In simulation/mock mode, performs ZERO system restore point attempts or registry exports.
         """
         logger.info(f"Executing Pre-flight Safety for Session {self.session_id} (Mock/DryRun: {self.mock_mode})")
@@ -91,7 +94,20 @@ class SafetyTransactionManager(TransactionManager):
             self.registry_backup_ready = True
             self.snapshot_ready = True
         else:
-            # Production Mode: Create System Restore Point & Registry Export
+            # Disk Space Safety Gate (Require >= 5.0 GB free on system drive C:)
+            drives = get_storage_drives()
+            sys_drive = next((d for d in drives if "C" in d.drive_letter.upper()), drives[0] if drives else None)
+            if sys_drive and sys_drive.free_gb < 5.0:
+                err_msg = f"CRITICAL: System drive ({sys_drive.drive_letter}) has insufficient free space ({sys_drive.free_gb:.2f} GB free < 5.0 GB required). Optimization cancelled safely."
+                logger.error(err_msg)
+                return {
+                    "restore_point": False,
+                    "registry_backup": False,
+                    "snapshot": False,
+                    "error": err_msg
+                }
+
+            # Production Mode: Create ONE Session System Restore Point & Registry Export
             r_ok, _ = create_system_restore_point(description=f"WinForge_{self.session_id}")
             self.restore_point_ready = r_ok
             
@@ -104,4 +120,5 @@ class SafetyTransactionManager(TransactionManager):
             "restore_point": self.restore_point_ready,
             "registry_backup": self.registry_backup_ready,
             "snapshot": self.snapshot_ready,
+            "error": None
         }

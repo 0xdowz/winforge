@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Tuple, List
 
 from winforge.models.rollback import RollbackTransaction, RollbackAction
+from winforge.core.privileges import is_admin
 
 logger = logging.getLogger("winforge")
 
@@ -48,7 +49,7 @@ class RollbackEngine:
 
         if action.action_type == "REGISTRY_EXPORT_RESTORE":
             reg_file = session_dir / "registry_backups" / f"{action.target}.reg"
-            if reg_file.exists() and sys.platform == "win32":
+            if reg_file.exists() and sys.platform == "win32" and is_admin():
                 cmd = f'reg.exe import "{reg_file}"'
                 res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
                 if res.returncode == 0:
@@ -59,7 +60,7 @@ class RollbackEngine:
                 return True, f"[MOCK] Re-imported Registry Backup: {action.target}.reg"
 
         elif action.action_type == "SERVICE_START_TYPE":
-            if sys.platform == "win32":
+            if sys.platform == "win32" and is_admin():
                 cmd = f'sc.exe config "{action.target}" start= {action.previous_value}'
                 res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
                 if res.returncode == 0:

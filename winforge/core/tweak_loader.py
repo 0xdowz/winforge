@@ -3,14 +3,14 @@ import logging
 from pathlib import Path
 from typing import List
 
-from winforge.models.tweak import Tweak
+from winforge.models.tweak import Tweak, validate_tweak_schema
 from winforge.utils.paths import get_config_dir
 
 logger = logging.getLogger("winforge")
 
 
 def load_tier1_tweaks() -> List[Tweak]:
-    """Loads Tier 1 safe tweaks from config/tweaks/*.json files."""
+    """Loads Tier 1 safe tweaks from config/tweaks/*.json files using centralized schema validation."""
     tweaks: List[Tweak] = []
     cfg_dir = get_config_dir()
     tweaks_dir = cfg_dir / "tweaks"
@@ -25,8 +25,10 @@ def load_tier1_tweaks() -> List[Tweak]:
                 data = json.load(f)
                 if isinstance(data, list):
                     for item in data:
-                        tweak = Tweak.model_validate(item)
-                        tweaks.append(tweak)
+                        valid, sanitized, warnings = validate_tweak_schema(item)
+                        if valid:
+                            tweak = Tweak.model_validate(sanitized)
+                            tweaks.append(tweak)
         except Exception as e:
             logger.error(f"Failed loading tweaks from {json_file.name}: {e}")
 

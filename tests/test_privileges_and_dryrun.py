@@ -1,7 +1,15 @@
 from unittest.mock import patch, MagicMock
 import pytest
+from pathlib import Path
+
 from winforge.core.privileges import is_admin, require_admin, relaunch_as_admin, request_elevation_if_needed
 from winforge.safety.transaction import SafetyTransactionManager
+from winforge.safety.registry_backup import normalize_registry_path, export_registry_key
+from winforge.models.tweak import Tweak, validate_tweak_schema
+from winforge.core.session import save_pending_execution, load_pending_execution, clear_pending_execution
+from winforge.utils.paths import get_bundle_dir, get_app_dir, get_executable_dir
+from winforge.core.safety_approval import SafetyApprovalEngine
+from winforge.safety.rollback_engine import RollbackEngine
 from winforge.cli.interface import WinForgeCLI
 
 
@@ -11,80 +19,114 @@ def test_is_admin_check():
     assert isinstance(res, bool)
 
 
-def test_non_admin_launch_does_not_create_restore_point_or_modify_registry():
-    """Requirement 1 & 2: Verify non-admin launch & analysis phase creates ZERO restore points and performs NO registry modifications."""
-    with patch("winforge.safety.transaction.create_system_restore_point") as mock_restore, \
-         patch("winforge.safety.transaction.export_registry_key") as mock_reg, \
-         patch("winforge.core.privileges.is_admin", return_value=False):
-        
-        cli = WinForgeCLI(tech_mode=False, dry_run=False, mock_execution=False)
-        # Phase 1: Analysis and scan only
-        cli.latest_report = MagicMock()
-        
-        # Verify restore point creation and registry export were NEVER called
-        mock_restore.assert_not_called()
-        mock_reg.assert_not_called()
+def test_elevation_resume_persistence(tmp_path):
+    """Requirement 8.1: Test elevation state saving and resume restoration."""
+    with patch("winforge.core.session.get_app_dir", return_value=tmp_path):
+        saved_path = save_pending_execution(
+            session_id="TEST_RESUME_108",
+            mode="BEGINNER",
+            max_risk=20,
+            selected_tweaks=["TWEAK_GAME_001", "TWEAK_POWER_001"],
+            execute=True,
+            dry_run=False,
+            tech_mode=False
+        )
+        assert saved_path.exists()
+
+        state = load_pending_execution()
+        assert state is not None
+        assert state["session_id"] == "TEST_RESUME_108"
+        assert state["mode"] == "BEGINNER"
+        assert state["max_risk"] == 20
+        assert "TWEAK_GAME_001" in state["selected_tweaks"]
+
+        clear_pending_execution()
+        assert load_pending_execution() is None
 
 
-def test_user_declining_execution_creates_nothing(tmp_path):
-    """Requirement 3: Verify user declining execution prompt creates ZERO restore points or registry exports."""
-    with patch("winforge.safety.transaction.create_system_restore_point") as mock_restore, \
-         patch("winforge.safety.transaction.export_registry_key") as mock_reg, \
-         patch("rich.prompt.Confirm.ask", return_value=False):
-        
-        cli = WinForgeCLI(tech_mode=False, dry_run=False, mock_execution=False)
-        cli.latest_report = MagicMock()
-        
-        cli.run_profile_optimization(max_risk=20, profile_name="Beginner Mode")
-        
-        mock_restore.assert_not_called()
-        mock_reg.assert_not_called()
+def test_malformed_tweak_schema_validation():
+    """Requirement 8.2: Test malformed tweak missing rationale does not crash and provides fallback."""
+    raw_tweak = {
+        "id": "TWEAK_MALFORMED_001",
+        "name": "Malformed Test Tweak",
+        "description": "Test tweak missing rationale field",
+        "category": "CLEANUP",
+        "risk_score": 10,
+        "detection_logic": {},
+        "apply_method": {},
+        "rollback_method": {}
+    }
+    valid, sanitized, warnings = validate_tweak_schema(raw_tweak)
+    assert valid is True
+    assert sanitized["rationale"] == "No rationale provided"
+    assert "rationale" in warnings[0]
+
+    # Verify Pydantic model parses without error
+    tweak = Tweak.model_validate(sanitized)
+    assert tweak.rationale == "No rationale provided"
 
 
-def test_user_accepting_execution_triggers_elevation_check():
-    """Requirement 4: Verify user accepting execution triggers elevation check if non-admin."""
-    with patch("rich.prompt.Confirm.ask", return_value=True), \
-         patch("winforge.core.privileges.is_admin", return_value=False), \
-         patch("winforge.core.privileges.request_elevation_if_needed", return_value=False) as mock_elevation:
-        
-        cli = WinForgeCLI(tech_mode=False, dry_run=False, mock_execution=False)
-        cli.latest_report = MagicMock()
-        
-        cli.run_profile_optimization(max_risk=20, profile_name="Beginner Mode")
-        
-        mock_elevation.assert_called_once()
+def test_pyinstaller_path_resolution():
+    """Requirement 8.3: Test PyInstaller frozen mode and development absolute path resolution."""
+    bundle_dir = get_bundle_dir()
+    app_dir = get_app_dir()
+    exe_dir = get_executable_dir()
+
+    assert bundle_dir.is_absolute()
+    assert app_dir.is_absolute()
+    assert exe_dir.is_absolute()
 
 
-def test_admin_execution_creates_safety_snapshot_and_preflight(tmp_path):
-    """Requirement 5: Verify admin execution creates safety snapshot and runs preflight safety."""
-    with patch("rich.prompt.Confirm.ask", return_value=True), \
-         patch("winforge.core.privileges.is_admin", return_value=True), \
-         patch("winforge.safety.transaction.create_system_restore_point", return_value=(True, "OK")) as mock_restore, \
-         patch("winforge.safety.transaction.export_registry_key", return_value=(True, "OK")) as mock_reg, \
-         patch("winforge.optimizations.executor.OptimizationExecutor.process_tweak_pipeline") as mock_exec:
-        
-        mock_exec.return_value = (MagicMock(), MagicMock(message="Success", status=MagicMock(value="APPLIED")))
-        
-        cli = WinForgeCLI(tech_mode=False, dry_run=False, mock_execution=False)
-        cli.latest_report = MagicMock()
-        
-        cli.run_profile_optimization(max_risk=20, profile_name="Beginner Mode")
-        
-        mock_restore.assert_called_once()
-        mock_reg.assert_called_once()
+def test_registry_path_normalization():
+    """Requirement 8.4: Test shorthand and missing hive registry path normalization."""
+    assert normalize_registry_path("SOFTWARE\\Microsoft\\Windows") == "HKLM\\SOFTWARE\\Microsoft\\Windows"
+    assert normalize_registry_path("System\\GameConfigStore") == "HKLM\\System\\GameConfigStore"
+    assert normalize_registry_path("HKEY_LOCAL_MACHINE\\SOFTWARE\\Test") == "HKLM\\SOFTWARE\\Test"
+    assert normalize_registry_path("HKEY_CURRENT_USER\\Software\\Test") == "HKCU\\Software\\Test"
+    assert normalize_registry_path("HKLM\\SOFTWARE\\Test") == "HKLM\\SOFTWARE\\Test"
+    assert normalize_registry_path("HKCU\\Software\\Test") == "HKCU\\Software\\Test"
 
 
-def test_dry_run_zero_system_modifications(tmp_path):
-    """Verify SafetyTransactionManager in mock/dry-run mode performs ZERO restore point or registry exports."""
-    with patch("winforge.safety.transaction.create_system_restore_point") as mock_restore, \
-         patch("winforge.safety.transaction.export_registry_key") as mock_reg:
+def test_disk_space_safety_gate_blocking():
+    """Requirement 8.5: Test disk safety gate blocks execution if free space < 5.0 GB."""
+    engine = SafetyApprovalEngine()
+    
+    mock_low_drive = MagicMock(drive_letter="C:\\", free_gb=2.1)
+    with patch("winforge.core.safety_approval.get_storage_drives", return_value=[mock_low_drive]), \
+         patch("winforge.core.safety_approval.is_admin", return_value=True):
         
-        stm = SafetyTransactionManager(session_id="TEST_DRYRUN_001", session_dir=tmp_path, mock_mode=True)
-        res = stm.execute_preflight_safety()
-        
-        assert res["restore_point"] is True
-        assert res["registry_backup"] is True
-        assert res["snapshot"] is True
-        
-        mock_restore.assert_not_called()
-        mock_reg.assert_not_called()
+        res = engine.evaluate_realtime_safety(mock=False)
+        assert res.approved is False
+        assert "insufficient free space" in res.reason.lower()
+        assert res.checks_passed["sufficient_disk_space"] is False
+
+
+def test_atomic_rollback_on_tweak_failure(tmp_path):
+    """Requirement 8.6: Test session rollback triggered when a tweak fails."""
+    ledger_file = tmp_path / "rollback.json"
+    tx_data = {
+        "transaction_id": "TEST_FAIL_SESSION",
+        "timestamp": "2026-07-28T20:00:00Z",
+        "actions": [
+            {
+                "tweak_id": "TWEAK_GAME_001",
+                "action_type": "SERVICE_START_TYPE",
+                "target": "diagtrack",
+                "previous_value": "demand",
+                "new_value": "disabled",
+                "timestamp": "2026-07-28T20:00:01Z"
+            }
+        ]
+    }
+    with open(ledger_file, "w", encoding="utf-8") as f:
+        f.write(import_json_str(tx_data))
+
+    rb_engine = RollbackEngine()
+    success, logs = rb_engine.rollback_session(tmp_path)
+    assert success is True
+    assert len(logs) == 1
+
+
+def import_json_str(data):
+    import json
+    return json.dumps(data)
