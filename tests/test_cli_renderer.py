@@ -102,6 +102,30 @@ def test_hardware_intelligence_engine_v2():
     assert len(res["rationale"]) > 0
 
 
+def test_hardware_intelligence_engine_missing_data_fallback():
+    """Verify hardware engine handles None reports and missing nested fields cleanly without exceptions."""
+    res_none = hardware_engine.analyze_hardware_profile(None)
+    assert res_none["recommended_profile"] == "Balanced Client Profile"
+    assert res_none["confidence_percent"] == 80
+    assert "rationale" in res_none
+    assert len(res_none["reasons"]) > 0
+
+    partial_report = SystemHealthReport(
+        timestamp="2026-07-26T18:00:00",
+        os=OSInfo(product_name="Windows 10"),
+        cpu=CPUInfo(name="", logical_cores=0, physical_cores=0, max_frequency_mhz=0.0, current_usage_pct=0.0),
+        ram=RAMInfo(total_gb=0.0, available_gb=0.0, used_gb=0.0, percent_used=0.0),
+        gpu=[], drives=[],
+        power=PowerPlan(active_name="Balanced", active_guid="...", is_on_battery=False),
+        categories=CategoryScores(performance_score=80.0, security_score=80.0, maintenance_score=80.0, startup_score=80.0),
+        health_score=80.0, startup_count=0, non_essential_services_count=0, warnings=[]
+    )
+    res_partial = hardware_engine.analyze_hardware_profile(partial_report)
+    assert "recommended_profile" in res_partial
+    assert "rationale" in res_partial
+    assert res_partial["confidence_percent"] == 85
+
+
 def test_security_health_engine():
     res = security_engine.audit_security_health()
     assert "security_score" in res
