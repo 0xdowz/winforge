@@ -8,7 +8,10 @@
     "risk_score": 10,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Medium",
@@ -43,7 +46,12 @@
       "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
       "value_name": "GPU Priority",
       "expected_value": 8
-    }
+    },
+    "rationale": "Configures Windows Multimedia Task Scheduler GPU Priority to maximum for active games.",
+    "friendly_name": "Optimize GPU Priority for Games",
+    "what_it_does": "Sets GPU scheduling priority to 8 (High) in the Windows Multimedia SystemProfile.",
+    "why_it_exists": "Ensures foreground games get prioritized access to GPU resources over background tasks.",
+    "exact_system_changes": "Registry DWORD: HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games\\GPU Priority = 8"
   },
   {
     "id": "TWEAK_GAME_002",
@@ -54,7 +62,10 @@
     "risk_score": 15,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Low",
@@ -89,7 +100,12 @@
       "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
       "value_name": "SystemResponsiveness",
       "expected_value": 0
-    }
+    },
+    "rationale": "Tunes Windows SystemResponsiveness registry key from default 20% background reservation to 0%.",
+    "friendly_name": "System Responsiveness Tuning",
+    "what_it_does": "Sets SystemResponsiveness to 0 so Windows allocates 100% of CPU cycles to foreground apps.",
+    "why_it_exists": "Eliminates micro-stutter by preventing background tasks from reserving 20% of CPU time during gaming.",
+    "exact_system_changes": "Registry DWORD: HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\SystemResponsiveness = 0"
   },
   {
     "id": "TWEAK_GAME_003",
@@ -100,7 +116,10 @@
     "risk_score": 10,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Low",
@@ -135,7 +154,12 @@
       "key": "System\\GameConfigStore",
       "value_name": "GameDVR_Enabled",
       "expected_value": 0
-    }
+    },
+    "rationale": "Disables background Xbox Game DVR telemetry recording to reduce CPU overhead.",
+    "friendly_name": "Disable Background Game DVR Telemetry",
+    "what_it_does": "Disables Xbox GameDVR background recording and telemetry capturing.",
+    "why_it_exists": "Reduces background CPU and disk usage when playing games.",
+    "exact_system_changes": "Registry DWORD: HKCU\\System\\GameConfigStore\\GameDVR_Enabled = 0"
   },
   {
     "id": "TWEAK_GAME_004",
@@ -146,7 +170,10 @@
     "risk_score": 85,
     "risk_category": "TECHNICIAN_ONLY",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Medium",
@@ -181,6 +208,11 @@
       "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
       "value_name": "NetworkThrottlingIndex",
       "expected_value": 4294967295
-    }
+    },
+    "rationale": "Tunes DirectX Graphics Preemption Priority to scheduling level 6.",
+    "friendly_name": "DirectX Graphics Preemption Tuning",
+    "what_it_does": "Sets Priority level to 6 in Multimedia Games task profile.",
+    "why_it_exists": "Improves frame pacing and reduces graphics rendering latency.",
+    "exact_system_changes": "Registry DWORD: HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games\\Priority = 6"
   }
 ]

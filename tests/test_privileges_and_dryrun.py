@@ -127,11 +127,12 @@ def test_atomic_rollback_on_tweak_failure(tmp_path):
     assert len(logs) == 1
 
 
-def test_resume_optimization_without_import_error(tmp_path):
+def test_resume_optimization_without_import_error(tmp_path, monkeypatch):
     """Verify render_execution_report import and resume_optimization execution without ImportError."""
     from winforge.cli.renderer import render_execution_report
     assert callable(render_execution_report)
 
+    monkeypatch.setenv("WINFORGE_NON_INTERACTIVE", "1")
     app = WinForgeCLI(tech_mode=False, dry_run=True, mock_execution=True)
     state = {
         "session_id": "TEST_SESSION_RESUME_001",
@@ -144,7 +145,7 @@ def test_resume_optimization_without_import_error(tmp_path):
         "tech_mode": False,
         "resume_required": True
     }
-    with patch("winforge.core.session.get_app_dir", return_value=tmp_path):
+    with patch("winforge.core.session.get_sessions_dir", return_value=tmp_path):
         code = app.resume_optimization(state)
         assert code == 0
 

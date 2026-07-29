@@ -8,7 +8,10 @@
     "risk_score": 10,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Low",
@@ -22,7 +25,12 @@
     "apply_method": {
       "type": "folder_clean",
       "target_dir": "C:\\Windows\\Temp",
-      "safe_file_extensions": [".tmp", ".log", ".bak", ".chk"]
+      "safe_file_extensions": [
+        ".tmp",
+        ".log",
+        ".bak",
+        ".chk"
+      ]
     },
     "rollback_method": {
       "type": "none",
@@ -32,7 +40,12 @@
       "type": "folder_size_below",
       "path": "C:\\Windows\\Temp",
       "target_mb": 10
-    }
+    },
+    "rationale": "System temporary files accumulate over time and consume storage space unnecessarily.",
+    "friendly_name": "Clean Windows System Temp Files",
+    "what_it_does": "Deletes temporary cache files (.tmp, .log, .chk) stored in C:\\Windows\\Temp.",
+    "why_it_exists": "Frees up system drive space without removing any operating system core files.",
+    "exact_system_changes": "Directory Purge: C:\\Windows\\Temp (*.tmp, *.log, *.chk)"
   },
   {
     "id": "TWEAK_CLEAN_002",
@@ -43,7 +56,10 @@
     "risk_score": 10,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": false,
     "requires_reboot": false,
     "performance_gain_estimate": "Low",
@@ -57,7 +73,11 @@
     "apply_method": {
       "type": "folder_clean",
       "target_dir": "%TEMP%",
-      "safe_file_extensions": [".tmp", ".log", ".bak"]
+      "safe_file_extensions": [
+        ".tmp",
+        ".log",
+        ".bak"
+      ]
     },
     "rollback_method": {
       "type": "none",
@@ -67,7 +87,12 @@
       "type": "folder_size_below",
       "path": "%TEMP%",
       "target_mb": 20
-    }
+    },
+    "rationale": "User temporary application cache files accumulate in %TEMP% and waste local disk space.",
+    "friendly_name": "Clean User Profile Temp Files",
+    "what_it_does": "Deletes user application cache files (.tmp, .log, .bak) from %LOCALAPPDATA%\\Temp.",
+    "why_it_exists": "Reclaims disk space wasted by leftovers from closed programs.",
+    "exact_system_changes": "Directory Purge: %LOCALAPPDATA%\\Temp (*.tmp, *.log)"
   },
   {
     "id": "TWEAK_CLEAN_003",
@@ -78,7 +103,10 @@
     "risk_score": 15,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Medium",
@@ -92,7 +120,9 @@
     "apply_method": {
       "type": "folder_clean",
       "target_dir": "C:\\Windows\\SoftwareDistribution\\Download",
-      "safe_file_extensions": ["*"]
+      "safe_file_extensions": [
+        "*"
+      ]
     },
     "rollback_method": {
       "type": "none",
@@ -102,7 +132,12 @@
       "type": "folder_size_below",
       "path": "C:\\Windows\\SoftwareDistribution\\Download",
       "target_mb": 50
-    }
+    },
+    "rationale": "Old Windows Update installation files remain in the download cache long after updates complete.",
+    "friendly_name": "Purge Windows Update Cache",
+    "what_it_does": "Cleans leftover update packages in C:\\Windows\\SoftwareDistribution\\Download.",
+    "why_it_exists": "Reclaims up to several gigabytes of space used by completed Windows update files.",
+    "exact_system_changes": "Directory Purge: C:\\Windows\\SoftwareDistribution\\Download"
   },
   {
     "id": "TWEAK_CLEAN_004",
@@ -113,7 +148,10 @@
     "risk_score": 10,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Low",
@@ -127,7 +165,9 @@
     "apply_method": {
       "type": "folder_clean",
       "target_dir": "C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive",
-      "safe_file_extensions": ["*"]
+      "safe_file_extensions": [
+        "*"
+      ]
     },
     "rollback_method": {
       "type": "none",
@@ -137,6 +177,11 @@
       "type": "folder_size_below",
       "path": "C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive",
       "target_mb": 5
-    }
+    },
+    "rationale": "Windows Error Reporting creates local crash dumps that accumulate indefinitely.",
+    "friendly_name": "Clear Windows Error Crash Dumps",
+    "what_it_does": "Purges accumulated WER crash log dump files from ProgramData.",
+    "why_it_exists": "Frees disk space taken by historical error diagnostic reports.",
+    "exact_system_changes": "Directory Purge: C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive"
   }
 ]

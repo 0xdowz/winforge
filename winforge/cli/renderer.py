@@ -50,22 +50,45 @@ def render_execution_report(
     storage_recovered_gb: float = 0.0,
     performance_gain_pct: float = 0.0
 ):
-    """Renders structured post-optimization Execution Report."""
-    render_section_header("Execution Report", "cyan")
+    """Renders structured post-optimization Execution Report with Desktop reports path and rollback guide."""
+    from winforge.utils.paths import get_sessions_dir, get_logs_dir, get_internal_logs_dir
+    session_dir = get_sessions_dir() / session_id
+    user_log_path = get_logs_dir() / "winforge.log"
+    internal_log_path = get_internal_logs_dir() / "startup.log"
 
-    console.print(f"  [bold white]Session ID:[/bold white]               [bold cyan]{session_id}[/bold cyan]")
-    console.print(f"  [bold white]Completed:[/bold white]                [bold white]{completed_count}/{total_count}[/bold white]")
-    console.print(f"  [bold white]Successful:[/bold white]               [bold green]{successful_count}[/bold green]")
-    console.print(f"  [bold white]Skipped:[/bold white]                  [bold yellow]{skipped_count}[/bold yellow]\n")
+    render_section_header("WINFORGE COMPLETED SUCCESSFULLY", "cyan")
+
+    console.print(f"  [bold green]✓ Windows System Restore Point:[/bold green] [bold white]CREATED[/bold white]")
+    console.print(f"  [bold white]Session Identifier:[/bold white]          [bold cyan]{session_id}[/bold cyan]")
+    console.print(f"  [bold white]Applied Optimizations:[/bold white]       [bold green]{successful_count}/{total_count}[/bold green] [dim white]({skipped_count} skipped)[/dim white]")
 
     if skipped_reasons:
         console.print("  [bold white]Skipped Reasons:[/bold white]")
         for reason in skipped_reasons:
             console.print(f"   • [dim white]{reason}[/dim white]")
-        console.print()
 
     console.print(f"  [bold white]Estimated Storage Recovered:[/bold white] [bold green]{storage_recovered_gb:.1f} GB[/bold green]")
     console.print(f"  [bold white]Estimated Performance Gain:[/bold white]  [bold green]{performance_gain_pct:.1f}%[/bold green]\n")
+
+    console.print("  [bold white]Reports & Ledgers Saved To:[/bold white]")
+    console.print(f"   [bold green]📁 {session_dir}[/bold green]\n")
+
+    console.print("  [bold white]Open this folder to view:[/bold white]")
+    console.print("   [bold green]✓[/bold green] [bold white]HTML Diagnostic Report[/bold white] [dim white](report.html)[/dim white]")
+    console.print("   [bold green]✓[/bold green] [bold white]Rollback Ledger[/bold white]        [dim white](rollback.json)[/dim white]")
+    console.print("   [bold green]✓[/bold green] [bold white]System Baseline State[/bold white]  [dim white](snapshot.json & session_summary.json)[/dim white]")
+    console.print(f"   [bold green]✓[/bold green] [bold white]Execution Logs[/bold white]         [dim white]({user_log_path})[/dim white]\n")
+
+    # Prominent Rollback Guidance Card
+    console.print("  [bold yellow]┌─────────────────────────────────────────────────────────────┐[/bold yellow]")
+    console.print("  [bold yellow]│[/bold yellow] [bold white]DISASTER RECOVERY & ONE-CLICK ROLLBACK INSTRUCTIONS[/bold white]       [bold yellow]│[/bold yellow]")
+    console.print("  [bold yellow]├─────────────────────────────────────────────────────────────┤[/bold yellow]")
+    console.print(f"  [bold yellow]│[/bold yellow] To reverse all changes made in this session, run:          [bold yellow]│[/bold yellow]")
+    console.print(f"  [bold yellow]│[/bold yellow]   [bold green]WinForge.exe rollback {session_id}[/bold green]       [bold yellow]│[/bold yellow]")
+    console.print("  [bold yellow]│[/bold yellow]                                                             [bold yellow]│[/bold yellow]")
+    console.print(f"  [bold yellow]│[/bold yellow] [dim white]User Reports:   {session_dir}[/dim white]")
+    console.print(f"  [bold yellow]│[/bold yellow] [dim white]Internal Traces: {internal_log_path}[/dim white]")
+    console.print("  [bold yellow]└─────────────────────────────────────────────────────────────┘[/bold yellow]\n")
 
 
 def render_actionable_error(title: str, reason: str, suggested_action: str):

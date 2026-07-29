@@ -8,7 +8,10 @@
     "risk_score": 15,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Medium",
@@ -29,7 +32,12 @@
     "verification_method": {
       "type": "power_plan_match",
       "expected_guid": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
-    }
+    },
+    "rationale": "Enables and activates the High Performance Power Plan overlay.",
+    "friendly_name": "Activate High Performance Power Scheme",
+    "what_it_does": "Switches active power scheme to High Performance (8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c).",
+    "why_it_exists": "Prevents CPU frequency throttling and energy sleep delays during intensive workloads.",
+    "exact_system_changes": "Power Scheme: powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
   },
   {
     "id": "TWEAK_POWER_002",
@@ -40,7 +48,10 @@
     "risk_score": 15,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Low",
@@ -69,7 +80,12 @@
       "subgroup": "2a737441-1930-4402-8d77-b2bebba308a3",
       "setting": "48e66770-2293-411b-8264-c946e09d38fb",
       "expected_value": 0
-    }
+    },
+    "rationale": "Disables USB selective suspend power management.",
+    "friendly_name": "Disable USB Selective Suspend",
+    "what_it_does": "Prevents Windows from powering down USB controllers and peripherals.",
+    "why_it_exists": "Fixes USB mouse/keyboard disconnects and audio interface latency spikes.",
+    "exact_system_changes": "Registry DWORD: HKLM\\SYSTEM\\CurrentControlSet\\Services\\USB\\DisableSelectiveSuspend = 1"
   },
   {
     "id": "TWEAK_POWER_003",
@@ -80,7 +96,10 @@
     "risk_score": 15,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Low",
@@ -109,7 +128,12 @@
       "subgroup": "503e94fe-9e28-4f1a-8e29-193e54221161",
       "setting": "ee12f906-9904-4f03-8e3a-178c92e06c6e",
       "expected_value": 0
-    }
+    },
+    "rationale": "Sets PCI Express Link State Power Management to Off.",
+    "friendly_name": "Disable PCIe Link Power Management",
+    "what_it_does": "Disables ASPM power savings on PCI Express slots.",
+    "why_it_exists": "Ensures maximum PCIe bandwidth to GPUs and NVMe drives without sleep state delays.",
+    "exact_system_changes": "Power Policy: powercfg -setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS 503b4409-2738-4227-8a4e-6bfd606b42b9 0"
   },
   {
     "id": "TWEAK_POWER_004",
@@ -120,7 +144,10 @@
     "risk_score": 10,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Low",
@@ -149,6 +176,11 @@
       "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442",
       "setting": "6738e2c4-27cd-4406-a690-093a893699b6",
       "expected_value": 0
-    }
+    },
+    "rationale": "Sets hard disk idle timeout to 0 (Never).",
+    "friendly_name": "Disable Hard Disk Idle Spin-Down",
+    "what_it_does": "Prevents storage drives from spinning down during operation.",
+    "why_it_exists": "Eliminates drive wake-up latency freezes when accessing files.",
+    "exact_system_changes": "Power Policy: powercfg -change disk-timeout-ac 0"
   }
 ]

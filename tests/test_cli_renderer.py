@@ -156,3 +156,22 @@ def test_safety_transaction_manager_lifecycle(tmp_path):
         new_value="1"
     )
     assert stm.ledger_path.exists()
+
+
+def test_granular_tweak_selection_menu_non_interactive(monkeypatch):
+    """Test render_tweak_selection_menu returns tweaks in non-interactive mode."""
+    monkeypatch.setenv("WINFORGE_NON_INTERACTIVE", "1")
+    wizard = OptimizationWizard()
+    tweak = Tweak(
+        id="TWEAK_SAFE_001",
+        name="GPU Priority",
+        description="Improves GPU priority.",
+        category=TweakCategory.GAMING,
+        risk_level=RiskLevel.LOW,
+        risk_score=10,
+        risk_category=RiskCategory.SAFE,
+        detection_logic={}, apply_method={}, rollback_method={}
+    )
+    res = wizard.render_tweak_selection_menu([tweak])
+    assert len(res) == 1
+    assert res[0].id == "TWEAK_SAFE_001"

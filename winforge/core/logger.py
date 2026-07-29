@@ -9,32 +9,65 @@ import logging
 import traceback
 from datetime import datetime
 from pathlib import Path
-from winforge.utils.paths import get_logs_dir
+from winforge.utils.paths import get_logs_dir, get_internal_logs_dir
 
 
 def setup_logger(log_level: int = logging.INFO) -> logging.Logger:
-    """Configures centralized winforge logger with file handler."""
+    """
+    Configures centralized winforge logger with a 3-level resilient fallback chain:
+      Priority 1: Desktop\\WinForge Reports\\Logs\\winforge.log
+      Priority 2: %LOCALAPPDATA%\\WinForge\\logs\\winforge.log
+      Priority 3: Console StreamHandler (sys.stdout)
+    Guarantees logger initialization NEVER crashes application startup.
+    """
     logger = logging.getLogger("winforge")
     logger.setLevel(log_level)
 
     if logger.handlers:
         return logger
 
-    # File Handler
-    log_file = get_logs_dir() / "winforge.log"
-    file_handler = logging.FileHandler(log_file, encoding="utf-8")
     file_formatter = logging.Formatter(
         "%(asctime)s - [%(levelname)s] - %(name)s - %(message)s"
     )
-    file_handler.setFormatter(file_formatter)
-    logger.addHandler(file_handler)
+
+    # Priority 1: Desktop User Logs
+    try:
+        log_dir = get_logs_dir()
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / "winforge.log"
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")
+        file_handler.setFormatter(file_formatter)
+        logger.addHandler(file_handler)
+        return logger
+    except Exception:
+        pass
+
+    # Priority 2: Internal AppData Logs Fallback
+    try:
+        internal_dir = get_internal_logs_dir()
+        internal_dir.mkdir(parents=True, exist_ok=True)
+        internal_file = internal_dir / "winforge.log"
+        file_handler = logging.FileHandler(internal_file, encoding="utf-8")
+        file_handler.setFormatter(file_formatter)
+        logger.addHandler(file_handler)
+        return logger
+    except Exception:
+        pass
+
+    # Priority 3: Console StreamHandler Fallback
+    try:
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(file_formatter)
+        logger.addHandler(console_handler)
+    except Exception:
+        pass
 
     return logger
 
 
 def get_startup_log_path() -> Path:
-    """Returns path to startup.log."""
-    return get_logs_dir() / "startup.log"
+    """Returns path to internal AppData startup.log."""
+    return get_internal_logs_dir() / "startup.log"
 
 
 def log_startup_info(args_list: list):

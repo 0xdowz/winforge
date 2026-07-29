@@ -10,8 +10,56 @@ from winforge.core.privileges import is_admin
 logger = logging.getLogger("winforge")
 
 
+from winforge.utils.paths import get_app_dir, get_sessions_dir
+from winforge.models.rollback import RollbackTransaction, RollbackAction
+from winforge.core.privileges import is_admin
+
+logger = logging.getLogger("winforge")
+
+
 class RollbackEngine:
     """Executes transactional rollbacks to revert system state."""
+
+    def find_session_dir(self, session_id: str) -> Tuple[Optional[Path], Optional[str]]:
+        """
+        Locates session directory by searching Desktop reports first, then LOCALAPPDATA fallback,
+        or direct path candidate if given an absolute path string.
+        Returns (session_dir_path, location_label).
+        """
+        # Search 1: Direct Path candidate if session_id is a full absolute path
+        try:
+            path_candidate = Path(session_id)
+            if path_candidate.is_absolute() and path_candidate.exists() and (path_candidate / "rollback.json").exists():
+                return path_candidate, f"Direct Path ({path_candidate})"
+        except Exception:
+            pass
+
+        # Search 2: Desktop Reports Sessions Directory
+        desktop_session = get_sessions_dir() / session_id
+        if desktop_session.exists() and (desktop_session / "rollback.json").exists():
+            return desktop_session, f"Desktop Reports Directory ({desktop_session})"
+
+        # Search 3: Legacy / Internal LOCALAPPDATA Sessions Directory
+        appdata_session = get_app_dir() / "sessions" / session_id
+        if appdata_session.exists() and (appdata_session / "rollback.json").exists():
+            return appdata_session, f"AppData Directory ({appdata_session})"
+
+        return None, None
+
+    def inspect_session_rollback(self, session_dir: Path) -> Tuple[bool, int, List[str]]:
+        """Parses rollback.json and returns (valid, action_count, action_descriptions)."""
+        ledger_path = session_dir / "rollback.json"
+        if not ledger_path.exists():
+            return False, 0, ["Rollback ledger (rollback.json) not found in session directory."]
+
+        try:
+            with open(ledger_path, "r", encoding="utf-8") as f:
+                data = f.read()
+            transaction = RollbackTransaction.model_validate_json(data)
+            descriptions = [f"{act.tweak_id}: {act.action_type} -> {act.target}" for act in transaction.actions]
+            return True, len(transaction.actions), descriptions
+        except Exception as e:
+            return False, 0, [f"Failed parsing rollback ledger: {e}"]
 
     def rollback_session(self, session_dir: Path) -> Tuple[bool, List[str]]:
         """Parses rollback.json in session_dir and executes inverse operations."""

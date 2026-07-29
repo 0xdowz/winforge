@@ -1,7 +1,6 @@
 {
-  "windows_compatibility.json": "610289107b8abf074882c585562220d77582f8aaa2020b025fb56438ba426664",
-  "tweaks\\cleanup.json": "b2eb6abb8c4b40d9fa5b5d4fcff857e4521addfcf6cecf9291ccb644b223b148",
-  "tweaks\\gaming.json": "4d61d1600b69a8597c8ebe053adc95f91eec64412cccffa96dbc3b55c4c96b46",
-  "tweaks\\power.json": "cb1d959a6a4d6a75ccb4bf77d1e535b8853b380ddc4dbb914201ae6fab921153",
-  "tweaks\\startup.json": "46e12aa514cb8d738c97850195a6731fa2edf8d6ed6236c1a6548f62eff8a3d6"
+  "tweaks/cleanup.json": "f4a3ee496617968d4b6676b86730f6728d94815e76e9140da99ed89e2a6100ff",
+  "tweaks/gaming.json": "a3e8b88e2d42ff2b7fbfdffdfb1cb1ba148f8fd3b8216066317d4bd6d184c842",
+  "tweaks/power.json": "8edf3199a28af329e282bf15420b2625c971aedf6f1a3efa43c9c4c3defa79ec",
+  "tweaks/startup.json": "e2c524c58cbd8127a0e08e59af00499c40570af3e7bd57d01127136632336235"
 }

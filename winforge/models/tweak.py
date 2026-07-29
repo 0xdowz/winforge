@@ -52,6 +52,10 @@ class Tweak(BaseModel):
     performance_gain_estimate: str = Field(default="Low", description="Estimated performance impact e.g. Low, Medium, High")
     user_visible_change: str = Field(default="None", description="Expected visible impact e.g. None, UI Refresh, Power Icon Change")
     technician_only: bool = Field(default=False, description="Whether tweak requires Technician approval")
+    friendly_name: str = Field(default="", description="Non-intimidating title for non-technical users")
+    what_it_does: str = Field(default="", description="Plain-English explanation of action taken")
+    why_it_exists: str = Field(default="", description="Plain-English rationale for optimization")
+    exact_system_changes: str = Field(default="", description="Formatted description of exact registry/service targets")
     detection_logic: Dict[str, Any] = Field(default_factory=dict, description="Logic to check current state")
     apply_method: Dict[str, Any] = Field(default_factory=dict, description="Instructions to execute tweak")
     rollback_method: Dict[str, Any] = Field(default_factory=dict, description="Instructions to revert tweak")
@@ -103,6 +107,22 @@ def validate_tweak_schema(tweak_data: Dict[str, Any]) -> Tuple[bool, Dict[str, A
 
     if "risk_score" not in data:
         data["risk_score"] = 10
+
+    # User-friendly explanation fallbacks
+    if "friendly_name" not in data or not data["friendly_name"]:
+        data["friendly_name"] = data["name"]
+
+    if "what_it_does" not in data or not data["what_it_does"]:
+        data["what_it_does"] = data["description"]
+
+    if "why_it_exists" not in data or not data["why_it_exists"]:
+        data["why_it_exists"] = data["rationale"]
+
+    if "exact_system_changes" not in data or not data["exact_system_changes"]:
+        apply_method = data.get("apply_method", {})
+        m_type = apply_method.get("type", "SYSTEM_MUTATION")
+        m_key = apply_method.get("key") or apply_method.get("target") or apply_method.get("path") or data["id"]
+        data["exact_system_changes"] = f"{m_type}: {m_key}"
 
     if warnings:
         logger.warning(f"[SCHEMA VALIDATION WARNING] {data['id']}: {'; '.join(warnings)}")

@@ -58,10 +58,10 @@ def main():
     parser.add_argument(
         "command",
         nargs="?",
-        choices=["welcome", "scan", "analyze", "optimize", "dry-run", "benchmark", "doctor", "license", "info", "tweaks", "security-check", "rollback", "tech"],
-        help="Subcommand shortcut (e.g. welcome, scan, analyze, doctor, info, tweaks, security-check, rollback)"
+        choices=["welcome", "scan", "analyze", "optimize", "dry-run", "benchmark", "doctor", "license", "info", "tweaks", "security-check", "rollback", "tech", "explain"],
+        help="Subcommand shortcut (e.g. welcome, scan, analyze, doctor, info, tweaks, security-check, rollback, explain)"
     )
-    parser.add_argument("subarg", nargs="?", help="Optional subcommand argument (e.g. list, SESSION_ID)")
+    parser.add_argument("subarg", nargs="?", help="Optional subcommand argument (e.g. list, SESSION_ID, TWEAK_ID)")
 
     args = parser.parse_args()
 
@@ -109,9 +109,42 @@ def main():
     is_tweaks = cmd == "tweaks"
     is_security = cmd == "security-check"
     is_rollback = cmd == "rollback"
+    is_explain = cmd == "explain"
     is_demo = args.demo
 
     logger.info(f"Launching WINFORGE v{__version__} by @{__author__} (Cmd: {cmd}, Subarg: {subarg})")
+
+    # Command: Explain Command
+    if is_explain:
+        from winforge.core.tweak_loader import load_tier1_tweaks
+        from winforge.cli.wizard import wizard
+        from winforge.cli.formatting import format_risk_badge
+        tweaks = load_tier1_tweaks()
+        if subarg:
+            target_tweak = None
+            if subarg.isdigit():
+                idx = int(subarg) - 1
+                if 0 <= idx < len(tweaks):
+                    target_tweak = tweaks[idx]
+            else:
+                for t in tweaks:
+                    if t.id.lower() == subarg.lower() or t.name.lower() == subarg.lower():
+                        target_tweak = t
+                        break
+            if target_tweak:
+                wizard.render_tweak_education_card(target_tweak)
+            else:
+                console.print(f"\n[bold red][EXPLAIN ERROR] Tweak '{subarg}' not found.[/bold red]")
+                console.print("  [dim white]Run 'WinForge.exe explain' to list available tweaks.[/dim white]\n")
+        else:
+            render_section_header("WINFORGE OPTIMIZATION EXPLAINER", "cyan")
+            console.print("  [bold white]Select an optimization to inspect technical & plain-English details:[/bold white]\n")
+            for i, t in enumerate(tweaks, 1):
+                f_name = t.friendly_name or t.name
+                risk_badge = format_risk_badge(t.risk_score)
+                console.print(f"   [bold cyan]{i:>2}. {t.id:<18}[/bold cyan] [bold white]{f_name:<34}[/bold white] {risk_badge}")
+            console.print("\n  [dim white]Usage: WinForge.exe explain [TWEAK_ID / NUMBER][/dim white]\n")
+        sys.exit(0)
 
     # Command 1: Info Command
     if is_info:
@@ -151,16 +184,77 @@ def main():
 
     # Command 4: Rollback Command
     if is_rollback:
+        from winforge.safety.rollback_engine import RollbackEngine
+        from winforge.utils.paths import get_sessions_dir, get_app_dir
+        from rich.prompt import Confirm
+
         render_section_header("WINFORGE DISASTER RECOVERY & ROLLBACK", "yellow")
+        engine = RollbackEngine()
+
         if not subarg or subarg == "list":
-            console.print("  [bold white]Available Session Rollback Ledgers:[/bold white]")
-            console.print("   • [cyan]SESSION_20260726_181001_6AF3B0[/cyan] [dim white](2026-07-26 18:10) — 4 tweaks logged[/dim white]")
-            console.print("   • [cyan]SESSION_20260726_174012_A9B1C2[/cyan] [dim white](2026-07-26 17:40) — 2 tweaks logged[/dim white]\n")
-            console.print("  [bold yellow]To rollback a session run:[/bold yellow] winforge rollback <SESSION_ID>\n")
+            console.print("  [bold white]Scanning for available Session Rollback Ledgers...[/bold white]\n")
+            found_count = 0
+            d_dir = get_sessions_dir()
+            if d_dir.exists():
+                for s in sorted(d_dir.glob("SESSION_*"), reverse=True):
+                    if (s / "rollback.json").exists():
+                        found_count += 1
+                        console.print(f"   • [cyan]{s.name:<32}[/cyan] [bold green]Desktop Reports[/bold green] [dim white]({s})[/dim white]")
+            a_dir = get_app_dir() / "sessions"
+            if a_dir.exists():
+                for s in sorted(a_dir.glob("SESSION_*"), reverse=True):
+                    if (s / "rollback.json").exists() and not (d_dir / s.name).exists():
+                        found_count += 1
+                        console.print(f"   • [cyan]{s.name:<32}[/cyan] [yellow]AppData Legacy[/yellow] [dim white]({s})[/dim white]")
+
+            if found_count == 0:
+                console.print("  [dim white]No rollback session ledgers found on system.[/dim white]\n")
+            else:
+                console.print("\n  [bold yellow]To rollback a session run:[/bold yellow] WinForge.exe rollback <SESSION_ID>\n")
+            sys.exit(0)
+
+        # Session ID provided
+        session_dir, location_label = engine.find_session_dir(subarg)
+
+        if not session_dir:
+            console.print(f"\n[bold red][ROLLBACK ERROR] Session ledger for '{subarg}' not found.[/bold red]")
+            console.print(f"  [dim white]Searched: Desktop Reports ({get_sessions_dir()}) and AppData ({get_app_dir() / 'sessions'})[/dim white]\n")
+            sys.exit(1)
+
+        ok, action_count, action_descs = engine.inspect_session_rollback(session_dir)
+
+        if not ok:
+            console.print(f"\n[bold red][ROLLBACK ERROR] Invalid session ledger: {action_descs[0]}[/bold red]\n")
+            sys.exit(1)
+
+        console.print(f"  [bold white]Session Identifier:[/bold white] [bold cyan]{subarg}[/bold cyan]")
+        console.print(f"  [bold white]Backup Location:[/bold white]    [bold green]{location_label}[/bold green]")
+        console.print(f"  [bold white]Restoration Actions:[/bold white] [bold yellow]{action_count} system actions to revert[/bold yellow]\n")
+
+        console.print("  [bold white]Actions to be reversed:[/bold white]")
+        for desc in action_descs:
+            console.print(f"   • [dim white]{desc}[/dim white]")
+        console.print()
+
+        import os
+        non_interactive = os.environ.get("WINFORGE_NON_INTERACTIVE") == "1"
+        if not non_interactive:
+            if not Confirm.ask(f"Initiate inverse atomic rollback for {subarg} now?", default=True):
+                console.print("\n  [bold yellow][ABORTED] Rollback operation cancelled by user. Zero changes made.[/bold yellow]\n")
+                sys.exit(0)
+
+        console.print(f"\n  [bold green]✓ Initiating inverse atomic rollback for Session [{subarg}]...[/bold green]")
+        success, logs = engine.rollback_session(session_dir)
+
+        for l in logs:
+            console.print(f"   {l}")
+
+        if success:
+            console.print(f"\n  [bold green]✓ Rollback completed cleanly for Session [{subarg}]. System baseline restored.[/bold green]\n")
+            sys.exit(0)
         else:
-            console.print(f"  [bold green]✓ Initiating inverse atomic rollback for Session [{subarg}]...[/bold green]")
-            console.print("  [bold green]✓ 4 transaction actions reversed cleanly. Registry baseline restored.[/bold green]\n")
-        sys.exit(0)
+            console.print(f"\n  [bold red]⚠ Rollback finished with warnings/errors. Review log output above.[/bold red]\n")
+            sys.exit(1)
 
     # Subcommand 5: Welcome Journey
     if is_welcome:
@@ -236,6 +330,12 @@ def main():
         max_risk = 20 if is_safe_profile else 50
         profile_name = "Beginner Mode" if is_safe_profile else "Advanced Mode"
         app.run_profile_optimization(max_risk=max_risk, profile_name=profile_name)
+        sys.exit(0)
+
+    # Subcommand: Demo Mode
+    if is_demo:
+        app = WinForgeCLI(tech_mode=False, dry_run=True, mock_execution=True)
+        app.handle_demo_mode()
         sys.exit(0)
 
     # Subcommand 12: Production Execution / Optimize

@@ -8,7 +8,10 @@
     "risk_score": 10,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Low",
@@ -43,7 +46,12 @@
       "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search",
       "value_name": "AllowCortana",
       "expected_value": 0
-    }
+    },
+    "rationale": "Disables Cortana background auto-startup broker.",
+    "friendly_name": "Disable Cortana Background Auto-Startup",
+    "what_it_does": "Sets Cortana Windows Service startup type to Disabled (4).",
+    "why_it_exists": "Stops unused voice assistant background process from consuming RAM.",
+    "exact_system_changes": "Service Start Type: Cortana -> Disabled (4)"
   },
   {
     "id": "TWEAK_STARTUP_002",
@@ -54,7 +62,10 @@
     "risk_score": 15,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Low",
@@ -79,7 +90,12 @@
       "type": "service_match",
       "service_name": "DiagTrack",
       "expected_start_type": "demand"
-    }
+    },
+    "rationale": "Optimizes Windows Connected User Experiences and Telemetry service (diagtrack).",
+    "friendly_name": "Disable Background Diagnostic Telemetry Service",
+    "what_it_does": "Sets DiagTrack service startup type to Disabled.",
+    "why_it_exists": "Stops continuous background diagnostic telemetry collection and upload.",
+    "exact_system_changes": "Service Start Type: diagtrack -> Disabled (4)"
   },
   {
     "id": "TWEAK_STARTUP_003",
@@ -90,7 +106,10 @@
     "risk_score": 10,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Low",
@@ -115,7 +134,12 @@
       "type": "service_match",
       "service_name": "MapsBroker",
       "expected_start_type": "demand"
-    }
+    },
+    "rationale": "Sets Downloaded Maps Manager service (MapsBroker) to Manual.",
+    "friendly_name": "Optimize Downloaded Maps Broker Service",
+    "what_it_does": "Configures MapsBroker service startup type to Manual/On-Demand (3).",
+    "why_it_exists": "Prevents background map update broker from running automatically at startup.",
+    "exact_system_changes": "Service Start Type: MapsBroker -> Manual (3)"
   },
   {
     "id": "TWEAK_STARTUP_004",
@@ -126,7 +150,10 @@
     "risk_score": 10,
     "risk_category": "SAFE",
     "schema_version": "2.0.0",
-    "supported_windows_versions": ["10", "11"],
+    "supported_windows_versions": [
+      "10",
+      "11"
+    ],
     "requires_admin": true,
     "requires_reboot": false,
     "performance_gain_estimate": "Low",
@@ -151,6 +178,11 @@
       "type": "service_match",
       "service_name": "RetailDemo",
       "expected_start_type": "disabled"
-    }
+    },
+    "rationale": "Deactivates Windows Retail Demo service.",
+    "friendly_name": "Deactivate Retail Demo Service",
+    "what_it_does": "Disables the RetailDemo service.",
+    "why_it_exists": "Removes unused store demo service background overhead.",
+    "exact_system_changes": "Service Start Type: RetailDemo -> Disabled (4)"
   }
 ]
